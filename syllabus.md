@@ -46,7 +46,7 @@ You are expected to attend every class meeting, including labs. You are only all
 
 ### Programming Assignments
 
-There will be regular programming assignments about once per week. You will be expected to submit both a solutions file and a test file. You should make sure to write sufficient tests to ensure your solutions behave as they should. Homework assignments are 30% of your final grade.
+There will be regular programming assignments about once per week. You will be expected to submit both a solutions file and a test file. You should make sure to write sufficient tests to ensure your solutions behave as they should. Programming assignments are 30% of your final grade.
 
 ### Exams
 
