@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="ocaml-basics">OCAML basics</h1>
+<p>OCAML is a statically typed programming language that is part of the ML family. It emphasizes functional programming with a fairly rich type system and an interesting module system.</p>
+<h2 id="expressions-values-types">Expressions, Values, Types</h2>
+<p>Everything in OCAML is an expression. Expressions are evaluated by successively performing replacements based on the language rules, until we arrive at an expression that cannot be further evaluated. These are called <strong>values</strong>. Here is a simple example of such a sequence of evaluations:</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml">(<span class="dv">4</span> + <span class="dv">5</span>) + (<span class="dv">2</span> * <span class="dv">3</span>)
+<span class="dv">9</span> + (<span class="dv">2</span> * <span class="dv">3</span>)
+<span class="dv">9</span> + <span class="dv">6</span>
+<span class="dv">15</span></code></pre>
+<p>Every value has a <strong>type</strong>. The main types in OCAML are:</p>
+<ul>
+<li><code>int</code> for integers values</li>
+<li><code>float</code> for double-precision floating point values</li>
+<li><code>char</code> for single characters, e.g. <code>'x'</code></li>
+<li><code>string</code> for strings, e.g. <code>&quot;fgrw&quot;</code></li>
+<li><code>bool</code> for the two boolean values <code>true</code> and <code>false</code></li>
+<li><code>unit</code> is a special type with only one value, <code>()</code></li>
+</ul>
+<p>In OCAML there is no automatic coercion between types. We will learn about other more complex types as we move on with the material.</p>
+<h2 id="the-three-key-questions">The three key questions</h2>
+<p>For each language construct we examine three questions:</p>
+<ol style="list-style-type: decimal">
+<li>What is the syntax for it?</li>
+<li>What are the typechecking rules for it?</li>
+<li>What are the evaluation rules (semantics) for it?</li>
+</ol>
+<p>With that in mind, let’s consider various constructs in turn:</p>
+<h3 id="arithmetic-operators">Arithmetic Operators</h3>
+<p>Most of these operators are defined in what is known as the <strong>Pervasives</strong> module, a library that is automatically included when you start OCAML. We will only discuss addition here, but you can as exercise write down similar instructions for other operators:</p>
+<dl>
+<dt>Syntax</dt>
+<dd><span class="math">\(e_1 + e_2\)</span> where <span class="math">\(e_1\)</span> and <span class="math">\(e_2\)</span> are expressions.
+</dd>
+<dt>Typechecking</dt>
+<dd>Both <span class="math">\(e_1\)</span> and <span class="math">\(e_2\)</span> must have type <code>int</code>. The whole expression has type <code>int</code>.
+</dd>
+<dt>Evaluation</dt>
+<dd>We first evaluate <span class="math">\(e_1\)</span> to an integer <span class="math">\(v_1\)</span>, then we evaluate <span class="math">\(e_2\)</span> to an integer <span class="math">\(v_2\)</span>, then we add those two values.
+</dd>
+</dl>
+<h3 id="conditional">Conditional</h3>
+<p>There is one conditional expression, and unlike most conditional constructs you might have seen in other languages, it is an <em>expression</em>, and thus evaluates to a value.</p>
+<dl>
+<dt>Syntax</dt>
+<dd><span class="math">\(\textbf{if } e_1\textbf{ then }e_2\textbf{ else }e_3\)</span> where <span class="math">\(e_1\)</span>, <span class="math">\(e_2\)</span>, <span class="math">\(e_3\)</span> are expressions.
+</dd>
+<dt>Typechecking</dt>
+<dd><span class="math">\(e_1\)</span> must be of type <code>bool</code>, and <span class="math">\(e_2\)</span> and <span class="math">\(e_3\)</span> must be of the same type. That type is then the type of the expression.
+</dd>
+<dt>Evaluation</dt>
+<dd>We first evaluate <span class="math">\(e_1\)</span>. If it evaluates to <code>true</code> then the expression evaluates to the result of evaluating <span class="math">\(e_2\)</span>. If <span class="math">\(e_1\)</span> evaluated to <code>false</code>, then the expression evaluates to the result of evaluating <span class="math">\(e_3\)</span>.
+</dd>
+</dl>
+<h3 id="bindings-environments">Bindings, Environments</h3>
+<p>An OCAML program is a sequence of <strong>bindings</strong>, that look like this:</p>
+<pre><code>let x = 2 + 3</code></pre>
+<p>Each binding is evaluated by evaluating the expression on the right side of the equal sign, and adding to the <strong>dynamic environment</strong> the “binding” <span class="math">\(x\mapsto 5\)</span>. Later bindings can use the variable “x”. There is also a <strong>static environment</strong>, used during the type-checking process, which holds a “binding” for the type of <span class="math">\(x\)</span>.</p>
+<p>So we have two new language constructs to consider: bindings, and variables.</p>
+<p>Bindings:</p>
+<dl>
+<dt>Syntax</dt>
+<dd><span class="math">\(\textbf{let }s = e\)</span> where <span class="math">\(s\)</span> is an identifier and <span class="math">\(e\)</span> is an expression.
+</dd>
+<dt>Typechecking</dt>
+<dd>We typecheck <span class="math">\(e\)</span>, and say it has a type <span class="math">\(t\)</span>. Then this is the type of the whole expression, and furthermore the static environment is extended with a binding <span class="math">\(x\mapsto t\)</span>.
+</dd>
+<dt>Evaluation</dt>
+<dd>We evaluate the expression <span class="math">\(e\)</span>, and say it produces a value <span class="math">\(v\)</span>. This is then the value of the whole expression, and furthermore the dynamic environment is extended with a binding <span class="math">\(x\mapsto v\)</span>.
+</dd>
+</dl>
+<p>Variables:</p>
+<dl>
+<dt>Syntax</dt>
+<dd><span class="math">\(s\)</span> where <span class="math">\(s\)</span> is an identifier.
+</dd>
+<dt>Typechecking</dt>
+<dd>We look for a binding for <span class="math">\(s\)</span> in the static environment and return what we find.
+</dd>
+<dt>Evaluation</dt>
+<dd>We look for a binding for <span class="math">\(s\)</span> in the dynamic environment and return what we find.
+</dd>
+</dl>
+<h3 id="local-bindings">Local Bindings</h3>
+<p>Local bindings have a very temporal nature. Instead of extending the environment for all future computations, they only extend it for a specific computation. So we are basically saying “let <span class="math">\(x\)</span> stand for this value while you compute this expression”.</p>
+<dl>
+<dt>Syntax</dt>
+<dd><span class="math">\(\textbf{let }s = e_1\textbf{ in }e_2\)</span> where <span class="math">\(s\)</span> is an identifier and <span class="math">\(e_1\)</span> and <span class="math">\(e_2\)</span> are expressions.
+</dd>
+<dt>Typechecking</dt>
+<dd>Compute the type of <span class="math">\(e_1\)</span> in the current static environment, and suppose this results in a type <span class="math">\(t_1\)</span>. Then temporarily extend that environment with a binding <span class="math">\(s\mapsto t_1\)</span>, and compute the type of <span class="math">\(e_2\)</span> is this extended environment. The resulting type is the type of the expression.
+</dd>
+<dt>Evaluation</dt>
+<dd>Evaluate <span class="math">\(e_1\)</span> in the current dynamic environment, and suppose this results in a value <span class="math">\(v_1\)</span>. Then temporarily extend that environment with a binding <span class="math">\(s\to v_1\)</span> and evaluate <span class="math">\(e_2\)</span> in this extended environment. The resulting value is the value of the expression.
+</dd>
+</dl>
+<p>As a little teaser, determine the value of the following expression:</p>
+<pre><code>let x = (let x = 3 in x + 1)
+in (let x = 1 in 2 * x) + x</code></pre>
+</body>
+</html>
