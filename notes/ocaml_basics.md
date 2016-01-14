@@ -111,6 +111,6 @@ As a little teaser, determine the value of the following expression:
 
 ```
 let x = (let x = 3 in x + 1)
-in (let x = 1 in 2 * x) + x
+in (let x = x + 8 in 2 * x) + x
 ```
 
