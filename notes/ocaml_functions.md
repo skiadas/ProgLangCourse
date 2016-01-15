@@ -8,9 +8,9 @@ A function definition needs to accomplish certain things:
 
 - It needs to provide a name for the function
 - It needs to provide a symbol for the function's parameter (we will discuss functions of multiple parameters later)
-- It needs to provide the *body* of the function. The body is an expression that needs to be evaluated under certain conditions.
+- It needs to provide the *body* of the function. The body is an expression that will be evaluated in a specific environment when the function is applied
 
-Since we already have ways of giving names to functions, we'll want to piggyback on that concent. Hence the syntax for function definitions is as follows:
+Since we already have ways of giving names to functions, we'll want to piggyback on that concept. Hence the syntax for function definitions is as follows:
 
 ```
 let f x = e
@@ -86,8 +86,14 @@ A tuple with only two entries is called a *pair*, one with three entries a *trip
 "Tuples" can also be used as the parameters to a function. We will make that more precise later on, but for now it allows us to have functions of multiple arguments like so:
 
 ```
-let f (x : int, y : int) = x + y
+let f (x, y) = x + y
 f (1, 3)
+```
+
+The version with a type ascription for the argument looks a bit more awkward:
+
+```
+let f ((x, y) : int * int) = x + y
 ```
 
 ## Example functions
@@ -97,6 +103,6 @@ Here are some practice problems for working with functions:
 1. Write a function "lnot" that takes as input a boolean and returns its negation (and use only if-then-else constructs)
 2. Write a function "isPositive" that takes as input an integer and returns true if the number is positive
 3. Write a function "sign" that takes as input an integer and returns 1 if the integer is positive, 0 if the integer is 0 and -1 if the integer is negative.
-4. Write function "flip" that takes as input a pair of numbers, and returns a pair of the same two numbers but in increasing order (smallest first)
+4. Write function "order" that takes as input a pair of numbers, and returns a pair of the same two numbers but in increasing order (smallest first)
 5. Write a function "areOrdered" that takes as input a triple of integers and returns true if they are in increasing order
-6. Write a function "validDate" that takes as input a triple of integers and decides if it is a valid date in format (month, day, year)
+6. Write a function "validDate" that takes as input a triple of integers and decides if it is a valid date in format (month, day, year) (counting every year as a non-leap year)

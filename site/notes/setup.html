@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="setting-ocaml-up">Setting OCAML up</h1>
+<h2 id="installing-utop">Installing utop</h2>
+<p>Our labs already have OCAML up. But the default interface is not particularly easy to work with. There is another environment called <code>utop</code> that makes things a little bit easier. To install it, execute the following lines in a terminal window:</p>
+<pre><code>opam init --dot-profile=~/.bashrc
+opam install utop</code></pre>
+<p>After these two run, you will be able to start an interactive OCAML session by typing <code>utop</code> at the shell prompt.</p>
+<h2 id="working-with-files">Working with files</h2>
+<p>While typing things directly in the utop interpreter is convenient at times, you should get in the habit of using files and then loading those files in. OCAML files use the <code>.ml</code> extension. Sublime Text should automatically set itself in “OCAML mode” when you save a file with that extension. It will then color you code appropriately.</p>
+<p>When you want to “run” your file in OCAML, go to the terminal window, start an OCAML session via <code>utop</code>, and type:</p>
+<pre><code>#use &quot;yourfile.ml&quot;;;</code></pre>
+<p>This will load and execute all lines in that file as if you had typed them directly, and it will print you a listing of created bindings and their types, in output that looks like this:</p>
+<pre><code>val f : int -&gt; int = &lt;fun&gt;</code></pre>
+</body>
+</html>

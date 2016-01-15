@@ -5,16 +5,16 @@ A week-by-week breakdown of the material.
 ## Week  1 (09/07-9/11)
 
 Day 1
-  ~ Introduction
+  ~ [OCAML setup](notes/setup.md)
 
 Day 2
-  ~ [OCAML basics.](notes/ocaml_basics.md) Evaluation model, basic types, bindings
+  ~ [OCAML basics](notes/ocaml_basics.md) Evaluation model, basic types, bindings
 
 Day 3
   ~ [Functions](notes/ocaml_functions.md)
 
 Day 4
-  ~ TBA
+  ~ [Tuples, practice](notes/ocaml_functions.md)
 
 
 ## Week  2 (09/14-09/18)
