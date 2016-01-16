@@ -16,6 +16,7 @@ Day 3
 Day 4
   ~ [Tuples, practice](notes/ocaml_functions.md)
 
+      [Assignment1](assignments/hw1.md) due by class time, Friday, January 22nd.
 
 ## Week  2 (09/14-09/18)
 
