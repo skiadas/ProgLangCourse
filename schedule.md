@@ -21,24 +21,24 @@ Day 4
 ## Week  2 (09/14-09/18)
 
 Day 1
-  ~ TBA
+  ~ [Lists and Option Types](notes/lists_options.md)
 
 Day 2
-  ~ TBA
+  ~ [Pattern-matching](notes/pattern_matching.md)
 
 Day 3
-  ~ TBA
+  ~ Recursion
 
 Day 4
-  ~ TBA
+  ~ Recursion via structural decomposition
 
 ## Week  3 (09/21-09/25)
 
 Day 1
-  ~ TBA
+  ~ Tail recursion
 
 Day 2
-  ~ TBA
+  ~ Exceptions
 
 Day 3
   ~ TBA
