@@ -60,8 +60,6 @@ Day 3
 Day 4
   ~ TBA
 
-    [Compound Interest (7.5)](notes/compound_interest.md)
-
 ## Week  5 (10/05-10/09)
 
 Day 1
