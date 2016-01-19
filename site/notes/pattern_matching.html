@@ -44,8 +44,8 @@ f (1, 2)</code></pre>
 <li>An underscore will match any kind of value, and the environment will not change. The value is effectively ignored.</li>
 <li>A tuple will only match if the corresponding value has the same number of components, and if all the sub-patterns match the corresponding components of the value. The environment will only be extended by whatever bindings were created by the subpatterns.</li>
 <li>A literal-value-pattern will only match the corresponding value if it is in fact the same value. The environment remains unchanged.</li>
-<li>A list pattern <code>p1 :: p2</code> will only match a list of the form <code>v1 :: vl</code> where the pattern <code>p1</code> matches <code>v1</code> and the pattern <code>p2</code> matches <code>vl</code>.</li>
-<li>A “constructor pattern” matches a value if the value is also built by that constructor and the contained pattern matches the corresponding matched value. For example the pattern <code>Some (x, y)</code> will match a value <code>Some (2, 3)</code> and will bind <code>x</code> to <code>2</code> and <code>y</code> to <code>3</code>.</li>
+<li>A list pattern <code>p1 :: p2</code> will only match a list of the form <code>v1 :: v2</code> where the pattern <code>p1</code> matches <code>v1</code> and the pattern <code>p2</code> matches <code>v2</code>.</li>
+<li>A “constructor pattern” matches a value if the value is also built by that constructor and the contained pattern matches the corresponding contained value. For example the pattern <code>Some (x, y)</code> will match a value <code>Some (2, 3)</code> and will bind <code>x</code> to <code>2</code> and <code>y</code> to <code>3</code>.</li>
 </ul>
 <p>Let us practice this a bit. Which of the following patterns match the corresponding values? What bindings do they produce? After you answer it on the board, test it on the OCAML interpreter by typing <code>let pattern = value;;</code>.</p>
 <ol style="list-style-type: decimal">

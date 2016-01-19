@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="recursion">Recursion</h1>
+<p>Additional reading on recursion: <a href="https://gist.github.com/skiadas/15f2e6f82b1cb3a41f39" class="uri">https://gist.github.com/skiadas/15f2e6f82b1cb3a41f39</a></p>
+<p>Recursion is the bread and butter of many functional programming paradigms. At its most basic, recursion simply means that a function is called from within itself, or from a function that was called from within itself. This creates the possibility of an “infinite loop”, so some care needs to be taken to ensure that the process terminates.</p>
+<p>There are two dimensions, each with two different options, for how recursion is used, resulting in 4 combinations:</p>
+<ol style="list-style-type: decimal">
+<li>Input type: This looks at what kinds of input we are dealing with and what our stopping conditions are.
+<ol style="list-style-type: decimal">
+<li><strong>Numerical recursion</strong> deals with a numerical input, that increases or decreasing over time, and with some stopping conditions when e.g we reach 0.</li>
+<li><strong>Structural recursion</strong> deals with input that is some complicated structure, e.g. a list. The recursive call then relates to the subcomponents of the structure, and the stopping condition has to do with base forms of that type (e.g. empty lists in the example of lists).</li>
+</ol></li>
+<li>Recursion type: This looks at how the input to the recursive call relates to the input of the original call.
+<ol style="list-style-type: decimal">
+<li><strong>Normal recursion</strong>: We express the value for the current input in terms of values for “previous/smaller” inputs.</li>
+<li><strong>State recursion</strong> or <em>accumulated recursion</em>: Part of the input is an accumulated state, that we update in the recursive call.</li>
+</ol></li>
+</ol>
+<p>Before we look at examples, one important thing to keep in mind is that, unlike other programming languages you may be used to, function activation records/frames in OCAML are not stored in the stack, but instead in the heap. There is therefore no stack limit on recursion.</p>
+<p>We will consider “Normal recursion” in this set of notes, and “State recursion” in the next.</p>
+<h2 id="numerical-recursion">Numerical Recursion</h2>
+<p>We will start by examining what we called numerical recursion above. The standard example in this case is the following: Given a number <span class="math">\(n\)</span>, assumed to be positive, compute the sum of all integers from <span class="math">\(1\)</span> to <span class="math">\(n\)</span>.</p>
+<p>The “Normal recursion” way goes as follows: To sum all the integers from <span class="math">\(1\)</span> to <span class="math">\(n\)</span>, we first add those up to <span class="math">\(n-1\)</span>, and to that result we add <span class="math">\(n\)</span>. The stopping condition is when <span class="math">\(n\)</span> is <span class="math">\(1\)</span>, in which case we return <span class="math">\(1\)</span>. So the code would look something like this:</p>
+<pre><code>let rec sum n =
+  if n = 1
+  then 1
+  else sum (n - 1) + n</code></pre>
+<p>The keyword <code>rec</code> lets OCAML know that <code>sum</code> is a recursively defined function, and so it should expect to see a call to <code>sum</code> in the body and that <code>sum</code> should refer to the function itself (rather than a previous binding of <code>sum</code>).</p>
+<p>Let us see how the computation of <code>sum 3</code> might go:</p>
+<pre><code>sum 3
+(sum 2) + 3
+((sum 1) + 2) + 3
+(1 + 2) + 3
+3 + 3
+6</code></pre>
+<p>Note that the addition operation indicated in the call to <code>sum</code>, in the “<code>(sum 2) + 3</code>” part, is not going to actually happen until later. In other words, the computation of <code>sum 3</code> has been suspected, awaiting for the call <code>sum 2</code> to be completed, before doing the final <code>+ 3</code> part. Similarly, at the next step, the call to <code>sum 2</code> gets suspended waiting for <code>sum 1</code> to be completed. These calls are then completed in reverse order. These suspended computations, are a key characteristic of the “normal recursion”.</p>
+<p><strong>Practice problem</strong>. Modify the above code to solve the following problem: Given a pair of numbers <code>(a, b)</code> where we can assume <span class="math">\(a\leq b\)</span>, find the sum of all numbers from <span class="math">\(a\)</span> up to and including <span class="math">\(b\)</span>.</p>
+<p><strong>Practice problem 2</strong>. Same question but now we might have <span class="math">\(a &gt; b\)</span>. We still want the sum of all numbers, in this case from <span class="math">\(b\)</span> to <span class="math">\(a\)</span>.</p>
+<h2 id="structural-recursion">Structural Recursion</h2>
+<p>Let us imagine a similar problem: We are given a list of numbers, namely a value of type <code>int list</code>. We want to add them, with the result being 0 if we add no numbers at all. The idea is similar and emblematic of structural recursion: One possibility is the empty list, and then we can return 0; the other possibility is a non-empty list, which we can think of as a combination of the first element (known as the <em>head</em>) along with the list consisting of the remaining elements (known as the <em>tail</em>). We can recursively determine the sum of elements in the tail, and add to that the result in the head.</p>
+<p>Here’s a way to implement it, using the <code>match-with</code> form:</p>
+<pre><code>let rec list_sum lst =
+  match lst with
+  | [] -&gt; 0
+  | hd :: tl -&gt; hd + list_sum tl</code></pre>
+<p>This shows us how we use the <code>match-with</code> mechanic to do “structural decomposition”: The first clause is our base case of an empty list, while the second clause matches a nonempty list. Here is how evaluation would proceed for <code>list_sum [1; 2; 3]</code>:</p>
+<pre><code>list_sum [1; 2; 3]
+1 + list_sum [2; 3]
+1 + (2 + list_sum [3])
+1 + (2 + (3 + list_sum []))
+1 + (2 + (3 + 0))
+1 + (2 + 3)
+1 + 5
+6</code></pre>
+<p>Notice the same “suspended computations”: all the additions occur at the end, after the innermost recursive call completes.</p>
+<p>This is also emblematic of how we work with lists: We match on the form of the list; we handle the base case of an empty list in one clause, while the other clause decomposes the list into the head element and the (smaller) tail.</p>
+<h2 id="list-practice">List practice</h2>
+<p>We will now implement various standard list problems as recursive functions. Make sure to first write out the type of the function, before implementing it.</p>
+<ol style="list-style-type: decimal">
+<li>A function <code>sq</code> that given a list of integers returns a list with the squares of these integers, in the same order.</li>
+<li>A function <code>hd</code> that given a list of integers returns the head element. If the list is empty, it raises an exception. You can do this by the line <code>raise (Failure &quot;hd&quot;)</code>.</li>
+<li>A function <code>tl</code> that given a list of integers returns the tail list. If the list is empty, it raises an exception <code>Failure &quot;tl&quot;</code>.</li>
+<li>A function <code>any</code> that is given a list of booleans and returns <code>true</code> if any one of them is true. It returns <code>false</code> for an empty list.</li>
+<li>A function <code>all</code> that is given a list of booleans and returns <code>false</code> if all of them are true. It returns <code>true</code> for an empty list.</li>
+<li>A function <code>append</code> that takes a pair of int lists <code>(l1, l2)</code> and returns the list consisting of the elements of <code>l1</code> followed by the elements of <code>l2</code>. For example <code>append ([1;2;3], [4;5;6]) = [1;2;3;4;5;6]</code>.</li>
+<li>A function <code>increasing</code> that takes a list of integers and returns <code>true</code> if those integers appear in increasing order. This one is a bit tricky.</li>
+</ol>
+</body>
+</html>

@@ -43,8 +43,8 @@ When the program is evaluated, the question that will arise is whether a pattern
 - An underscore will match any kind of value, and the environment will not change. The value is effectively ignored.
 - A tuple will only match if the corresponding value has the same number of components, and if all the sub-patterns match the corresponding components of the value. The environment will only be extended by whatever bindings were created by the subpatterns.
 - A literal-value-pattern will only match the corresponding value if it is in fact the same value. The environment remains unchanged.
-- A list pattern `p1 :: p2` will only match a list of the form `v1 :: vl` where the pattern `p1` matches `v1` and the pattern `p2` matches `vl`.
-- A "constructor pattern" matches a value if the value is also built by that constructor and the contained pattern matches the corresponding matched value. For example the pattern `Some (x, y)` will match a value `Some (2, 3)` and will bind `x` to `2` and `y` to `3`.
+- A list pattern `p1 :: p2` will only match a list of the form `v1 :: v2` where the pattern `p1` matches `v1` and the pattern `p2` matches `v2`.
+- A "constructor pattern" matches a value if the value is also built by that constructor and the contained pattern matches the corresponding contained value. For example the pattern `Some (x, y)` will match a value `Some (2, 3)` and will bind `x` to `2` and `y` to `3`.
 
 Let us practice this a bit. Which of the following patterns match the corresponding values? What bindings do they produce? After you answer it on the board, test it on the OCAML interpreter by typing `let pattern = value;;`.
 

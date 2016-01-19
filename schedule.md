@@ -27,7 +27,7 @@ Day 2
   ~ [Pattern-matching](notes/pattern_matching.md)
 
 Day 3
-  ~ Recursion
+  ~ [Recursion](notes/recursion.md)
 
 Day 4
   ~ Recursion via structural decomposition
@@ -35,7 +35,7 @@ Day 4
 ## Week  3 (09/21-09/25)
 
 Day 1
-  ~ Tail recursion
+  ~ State recursion, tail calls
 
 Day 2
   ~ Exceptions
