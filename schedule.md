@@ -30,15 +30,15 @@ Day 3
   ~ [Recursion](notes/recursion.md)
 
 Day 4
-  ~ Recursion via structural decomposition
+  ~ [State recursion](notes/recursion_state.md)
 
 ## Week  3 (09/21-09/25)
 
 Day 1
-  ~ State recursion, tail calls
+  ~ Exceptions
 
 Day 2
-  ~ Exceptions
+  ~ TBA
 
 Day 3
   ~ TBA

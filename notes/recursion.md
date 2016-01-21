@@ -75,6 +75,11 @@ Notice the same "suspended computations": all the additions occur at the end, af
 
 This is also emblematic of how we work with lists: We match on the form of the list; we handle the base case of an empty list in one clause, while the other clause decomposes the list into the head element and the (smaller) tail.
 
+To close, let us discuss the general elements of *recursion via structural decomposition*:
+
+1. Your structures come in two forms, "compound" and "atomic". In the case of lists, the atomic form is the empty list, while the compound form is the prepend operation `a :: rest`.
+2. In a `match-with` clause you handle the atomic cases by returning a value, and you handle the compound cases by recursively calling your function on the substructures, then combining those values appropriately.
+
 ## List practice
 
 We will now implement various standard list problems as recursive functions. Make sure to first write out the type of the function, before implementing it.
