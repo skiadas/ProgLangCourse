@@ -56,7 +56,7 @@ let rec list_sum lst =
 
 Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list.
 
-In general you should avoid this state recursion. But some problems do call for it. Programmers coming from procedural languages find it comforting, because it is essentially iteration with an accumulator, in disguise.
+In general you should avoid this state recursion. But some problems do call for it. This method is essentially iteration with an accumulator, in disguise: The arguments passed to the auxilliary function contain the accumulator and the "iterated variable". The resulting value is synthesized one step at a time, rather than at the end after all recursive calls have been completed. Programmers coming from procedural languages find it comforting, because of this relation to normal looping constructs. You should resist the temptation to do all recursion this way, in fact avoid using it unless you have a really good reason to do so.
 
 ## Practice problems
 
