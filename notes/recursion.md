@@ -7,7 +7,7 @@ Recursion is the bread and butter of many functional programming paradigms. At i
 There are two dimensions, each with two different options, for how recursion is used, resulting in 4 combinations:
 
 1. Input type: This looks at what kinds of input we are dealing with and what our stopping conditions are.
-    1. **Numerical recursion** deals with a numerical input, that increases or decreasing over time, and with some stopping conditions when e.g we reach 0.
+    1. **Numerical recursion** deals with a numerical input, that increases or decreases with each call, and with some stopping conditions when e.g we reach 0.
     2. **Structural recursion** deals with input that is some complicated structure, e.g. a list. The recursive call then relates to the subcomponents of the structure, and the stopping condition has to do with base forms of that type (e.g. empty lists in the example of lists).
 2. Recursion type: This looks at how the input to the recursive call relates to the input of the original call.
     1. **Normal recursion**: We express the value for the current input in terms of values for "previous/smaller" inputs.
