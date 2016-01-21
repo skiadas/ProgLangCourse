@@ -46,15 +46,26 @@ The key is the helper method: It takes as input the current "counter", `k`, as w
 
 A similar approach would work for the `list_sum` example:
 ```
-let rec list_sum lst =
-  let aux (sofar, remaining) =
+let list_sum lst =
+  let rec aux (sofar, remaining) =
     match remaining with
     | [] -> sofar
     | x :: rest -> aux (sofar + x, rest)
   in aux (0, lst)
 ```
 
-Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list.
+Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list. Computation would go as follows:
+```
+list_sum [1; 2; 3]
+aux (0, [1; 2; 3])
+aux (0 + 1, [2; 3])
+aux (1, [2; 3])
+aux (1 + 2, [3])
+aux (3, [3])
+aux (3 + 3, [])
+aux (6, [])
+6
+```
 
 In general you should avoid this state recursion. But some problems do call for it. This method is essentially iteration with an accumulator, in disguise: The arguments passed to the auxilliary function contain the accumulator and the "iterated variable". The resulting value is synthesized one step at a time, rather than at the end after all recursive calls have been completed. Programmers coming from procedural languages find it comforting, because of this relation to normal looping constructs. You should resist the temptation to do all recursion this way, in fact avoid using it unless you have a really good reason to do so.
 

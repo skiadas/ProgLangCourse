@@ -45,13 +45,22 @@ aux (6, 4)
 6</code></pre>
 <p>The key is the helper method: It takes as input the current “counter”, <code>k</code>, as well as the sum of the values so far, stored in the variable <code>sofar</code>. In the recursive call we update those values, and call the function with the updated values. When we have reached the last value, we can read off the sum from the <code>sofar</code> variable.</p>
 <p>A similar approach would work for the <code>list_sum</code> example:</p>
-<pre><code>let rec list_sum lst =
-  let aux (sofar, remaining) =
+<pre><code>let list_sum lst =
+  let rec aux (sofar, remaining) =
     match remaining with
     | [] -&gt; sofar
     | x :: rest -&gt; aux (sofar + x, rest)
   in aux (0, lst)</code></pre>
-<p>Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list.</p>
+<p>Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list. Computation would go as follows:</p>
+<pre><code>list_sum [1; 2; 3]
+aux (0, [1; 2; 3])
+aux (0 + 1, [2; 3])
+aux (1, [2; 3])
+aux (1 + 2, [3])
+aux (3, [3])
+aux (3 + 3, [])
+aux (6, [])
+6</code></pre>
 <p>In general you should avoid this state recursion. But some problems do call for it. This method is essentially iteration with an accumulator, in disguise: The arguments passed to the auxilliary function contain the accumulator and the “iterated variable”. The resulting value is synthesized one step at a time, rather than at the end after all recursive calls have been completed. Programmers coming from procedural languages find it comforting, because of this relation to normal looping constructs. You should resist the temptation to do all recursion this way, in fact avoid using it unless you have a really good reason to do so.</p>
 <h2 id="practice-problems">Practice problems</h2>
 <p>Some of these problems favor a state recursion approach, others favor a normal recursion.</p>
