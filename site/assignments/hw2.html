@@ -16,39 +16,39 @@
 <h1 id="assignment-2">Assignment 2<span class="small"> (<a href="2.pdf" title="2">pdf</a>)</span></h1>
 <p>Recursive functions. GitHub issues.</p>
 <p>You may need to refer to the <a href="http://caml.inria.fr/pub/docs/manual-ocaml/libref/Pervasives.html">Pervasives module</a> documentation occasionally. All the functions there are available in OCAML by default. You are NOT allowed to use everything that’s there unless we have talked about it or unless the assignment question asks you to look it up.</p>
-<p>In this assignment you are asked to implement 9 functions. Each function is worth two points, and the assignment has an extra point for “style”, for a total of 20 points.</p>
-<p>The assignment expects you to use GitHub and Git to keep track of your work. You have already set up GitHub on your first assignment. What we need to do now is “update” your GitHub with the new information. This is a somewhat delicate process, ass your “branch” has deviated from the instructor’s “branch”, and we need to realign them.</p>
+<p>In this assignment you are asked to implement 9 functions. Each function is worth two points, and the assignment has two extra points for “style”, for a total of 20 points.</p>
+<p>The assignment expects you to use GitHub and Git to keep track of your work. You have already set up GitHub on your first assignment. What we need to do now is “update” your GitHub with the new information. This is a somewhat delicate process, as your “branch” has deviated from the instructor’s “branch”, and we need to realign them.</p>
 <ol style="list-style-type: decimal">
 <li>The first thing we need to do is set up the instructor’s repository as a remote repository you can access. You will only have to do this first step once, while the other steps you will have to repeat for each assignment.
 <ul>
-<li>From the terminal in the directory that is your repository, do: `<code>git remote add instr https://github.com/skiadas/ProgLangAssignments.git</code></li>
+<li>From the terminal in the directory that is your repository, do: <code>git remote add instr https://github.com/skiadas/ProgLangAssignments.git</code></li>
 <li>Now do <code>git remote -v</code> and you should see a list of 4 items, two called “instr” and two called “origin”.</li>
 </ul></li>
-<li>Now we need to download updates version of the instructor’s repository and merge the changes into ours.
+<li>Now we need to download the updated version of the instructor’s repository and merge the changes into ours.
 <ul>
 <li>Type: <code>git fetch instr</code></li>
-<li>Type: <code>git merge master instr/master</code></li>
+<li>Type: <code>git merge master instr/master</code>. This may give you a editor window to edit a commit message. You don’t need to edit it, just “save” (writeOut) and exit. (This is probably not your prefered editor. See <a href="https://help.github.com/articles/associating-text-editors-with-git/">this page</a> for how to set up your favorite editor for use in these merge situations. I would recommend setting it to SublimeText).</li>
 <li>If it reports no problems, you’re ready.</li>
 <li>If it reports merge conflicts, you will need to resolve those first, then make a commit. <a href="https://help.github.com/articles/resolving-a-merge-conflict-from-the-command-line/">this page</a> has some instructions on how to do that. Or contact me.</li>
 </ul></li>
-<li>From this assignment on, we will start developing an issue-driven methodology for your assignments. Every piece you are working on should have a corresponding GitHub issue associated with it, and when you “commit” your work you would also be closing the issue. This item is where we describe this process:
+<li>From this assignment on, we will start developing an issue-driven methodology for your assignments. Every individual item you are working on should have a corresponding GitHub issue associated with it, and when you “commit” your work you would also be closing the issue. Here is the process for doing so:
 <ul>
-<li>Start by going to your project’s page in GitHub. You should see a “Settings” button near the right side of the main project bar. Click on it, and make sure that under the “Features” section there is a checkbox next to “Issues”.</li>
+<li>Start by going to your project’s page in GitHub (and be logged in to GitHub). You should see a “Settings” button near the right side of the main project bar. Click on it, and make sure that under the “Features” section there is a checkbox next to “Issues”. You only have to do this once.</li>
 <li>Now the project bar should have an item called “Issues”, click on it. This is where you can see pending issues, and also create new ones.</li>
 <li>Click the “New Issue” button to create a new issue. Put as its title “create stubs for hw2 functions”. Of course in future issues you’ll need to create an appropriate title.</li>
-<li>In the “Leave a comment” section you an elaborate on it. This section understand <a href="https://help.github.com/articles/github-flavored-markdown/">GitHub Flavored Markdown</a> and you should start getting used to that by reading the information in that list. One neat feature is <a href="https://github.com/blog/1825-task-lists-in-all-markdown-documents">task lists</a>, give them a go at some point, or even here by creating a checklist with all the functions you need to work on. Then as you implement a stub for each you can check them off.</li>
+<li>In the “Leave a comment” section you can elaborate on the issue. This section understands <a href="https://help.github.com/articles/github-flavored-markdown/">GitHub Flavored Markdown</a> and you should start getting used to that by reading the information in that link. One neat feature is <a href="https://github.com/blog/1825-task-lists-in-all-markdown-documents">task lists</a>, give them a go at some point, or even here by creating a checklist with all the functions you need to work on. Then as you implement a stub for each you can check them off.</li>
 <li>Click “Submit New Issue” when ready. This will create the new issue and give it an increasing number, starting from <code>#1</code>. You can use those numbers to refer to issues.</li>
 <li>Clicking on an issue shows you any discussion on that issue, and allows you to leave a comment. Do this now for practice. You can also close the issue from there, but we will show how to close issues via commits.</li>
 <li><p>Now you should go to the assignments file, read through the functions and for now implement “stubs” for them. So for each function you would write something like:</p>
 <pre><code>let f (x : int) = (x, 1)</code></pre>
 where of course you need to make sure these are the “right things” type-wise. The point of this part is to get the function signature right. So the value you use on the right may be completely wrong, for now, but we just want it there to correctly identify the types of functions.</li>
-<li>As you do this for each function, do <code>#use &quot;assignment1hw.ml;;&quot;</code> to make sure the signature is right, and if it is then check off the corresponding checkbox in the task list we created in GitHub for this issue.</li>
+<li>As you do this for each function, do <code>#use &quot;assignment2sub.ml;;&quot;</code> to make sure the signature is right, and if it is then check off the corresponding checkbox in the task list we created in GitHub for this issue.</li>
 <li>When you have all function stubs ready, it is time to make a commit. Here are the steps for that:
 <ul>
 <li><code>git add .</code> This “prepares” your changes for committing. You can also do <code>git add assignment2sub.ml</code> to add just the one file (otherwise it picks up all changes in that directory).</li>
 <li><code>git status</code> This should show you the one file ready for commit.</li>
 <li><code>git commit -m &quot;Implement hw2 stubs. Close #1&quot;</code> This creates a commit, and the last line should be typed exactly that way (with the number reflecting which issue you want to close).</li>
-<li><code>git push</code> This should upload your changes to GitHub, and also automatically close that issue.</li>
+<li><code>git push origin master</code> This should upload your changes to GitHub, and also automatically close that issue.</li>
 </ul></li>
 </ul></li>
 <li>From this point on you will repeat this process for each individual function:
