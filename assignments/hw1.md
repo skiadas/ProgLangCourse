@@ -30,8 +30,8 @@ The assignment expects you to use GitHub and Git to keep track of your work. The
     - `assignment1tests.ml` This is a file with a small number of tests, and you should add plenty tests your own. "Tests" are arranged as lines `let ... = e` where `e` is a an expression that is meant to evaluate to a boolean indicating if the tests succeeded or not.
 8. To "run" your tests, start an OCAML session in the terminal via `utop`, do:
 ```
-#use "assignment1hw.ml;;"
-#use "assignment1tests.ml;;"
+#use "assignment1sub.ml";;
+#use "assignment1tests.ml";;
 ```
 You should be able to use auto-completion.
     - The first `#use` should print for you the type signatures for all the functions you had to write. Make sure this matches the signatures described in the code file.
