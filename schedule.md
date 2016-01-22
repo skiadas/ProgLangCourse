@@ -16,7 +16,7 @@ Day 3
 Day 4
   ~ [Tuples, practice](notes/ocaml_functions.md)
 
-      [Assignment1](assignments/hw1.md) due by class time, Friday, January 22nd.
+      [Assignment 1](assignments/hw1.md) due by class time, Friday, January 22nd.
 
 ## Week  2 (09/14-09/18)
 
@@ -31,6 +31,8 @@ Day 3
 
 Day 4
   ~ [State recursion](notes/recursion_state.md)
+
+    [Assignment 2](assignments/hw2.md) due by class time, Wed, January 27th.
 
 ## Week  3 (09/21-09/25)
 
