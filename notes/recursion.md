@@ -88,6 +88,6 @@ We will now implement various standard list problems as recursive functions. Mak
 2. A function `hd` that given a list of integers returns the head element. If the list is empty, it raises an exception. You can do this by the line `raise (Failure "hd")`.
 3. A function `tl` that given a list of integers returns the tail list. If the list is empty, it raises an exception `Failure "tl"`.
 4. A function `any` that is given a list of booleans and returns `true` if any one of them is true. It returns `false` for an empty list.
-5. A function `all` that is given a list of booleans and returns `false` if all of them are true. It returns `true` for an empty list.
+5. A function `all` that is given a list of booleans and returns `true` only if all of them are true. It returns `true` for an empty list.
 6. A function `append` that takes a pair of int lists `(l1, l2)` and returns the list consisting of the elements of `l1` followed by the elements of `l2`. For example `append ([1;2;3], [4;5;6]) = [1;2;3;4;5;6]`.
 7. A function `increasing` that takes a list of integers and returns `true` if those integers appear in increasing order. This one is a bit tricky.
