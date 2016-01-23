@@ -2,7 +2,7 @@
 
 A week-by-week breakdown of the material.
 
-## Week  1 (09/07-9/11)
+## Week  1 (01/11-01/15)
 
 Day 1
   ~ [OCAML setup](notes/setup.md)
@@ -18,7 +18,7 @@ Day 4
 
       [Assignment 1](assignments/hw1.md) due by class time, Friday, January 22nd.
 
-## Week  2 (09/14-09/18)
+## Week  2 (01/18-01/22)
 
 Day 1
   ~ [Lists and Option Types](notes/lists_options.md)
@@ -34,10 +34,24 @@ Day 4
 
     [Assignment 2](assignments/hw2.md) due by class time, Wed, January 27th.
 
-## Week  3 (09/21-09/25)
+## Week  3 (01/25-01/29)
 
 Day 1
-  ~ Exceptions
+  ~ [Tail Calls](notes/tail_calls.md)
+
+Day 2
+  ~ [Type aliases and Type variants](notes/type_variants.md)
+
+Day 3
+  ~ [Polymorphic Types](notes/types_polymorphic.md)
+
+Day 4
+  ~ Function literals, functions as values
+
+## Week  4 (02/01-02/05)
+
+Day 1
+  ~ Higher order functions
 
 Day 2
   ~ TBA
@@ -48,48 +62,7 @@ Day 3
 Day 4
   ~ TBA
 
-## Week  4 (09/28-10/02)
-
-Day 1
-  ~ TBA
-
-Day 2
-  ~ TBA
-
-Day 3
-  ~ TBA
-
-Day 4
-  ~ TBA
-
-## Week  5 (10/05-10/09)
-
-Day 1
-  ~ TBA
-
-Day 2
-  ~ TBA
-
-Day 3
-  ~ TBA
-
-Day 4
-  ~ TBA
-
-## Week  6 (10/12-10/16)
-
-Day 1
-  ~ TBA
-
-Day 2
-  ~ TBA
-
-Day 3
-  ~ TBA
-
-Day 4
-
-## Week  7 (10/19-10/23)
+## Week  5 (02/08-02/12)
 
 Day 1
   ~ TBA
@@ -103,7 +76,38 @@ Day 3
 Day 4
   ~ TBA
 
-## Week  8 (10/26-10/30)
+## Week  6 (02/15-02/19)
+
+Day 1
+  ~ TBA
+
+Day 2
+  ~ TBA
+
+Day 3
+  ~ TBA
+
+Day 4
+
+## Week  7 (02/22-02/26)
+
+Day 1
+  ~ TBA
+
+Day 2
+  ~ TBA
+
+Day 3
+  ~ TBA
+
+Day 4
+  ~ **MIDTERM**
+
+## Week  8 (02/29-03/04)
+
+BREAK
+
+## Week  9 (03/07-03/11)
 
 Day 1
   ~ TBA
@@ -117,7 +121,7 @@ Day 3
 Day 4
   ~ TBA
 
-## Week  9 (11/02-11/06)
+## Week 10 (03/14-03/18)
 
 Day 1
   ~ TBA
@@ -131,7 +135,7 @@ Day 3
 Day 4
   ~ TBA
 
-## Week 10 (11/09-11/13)
+## Week 11 (03/21-03/25)
 
 Day 1
   ~ TBA
@@ -145,7 +149,7 @@ Day 3
 Day 4
   ~ TBA
 
-## Week 11 (11/16-11/20)
+## Week 12 (03/28-04/01)
 
 Day 1
   ~ TBA
@@ -159,7 +163,7 @@ Day 3
 Day 4
   ~ TBA
 
-## Week 12 (11/23-11/27)
+## Week 13 (04/04-04/08)
 
 Day 1
   ~ TBA
@@ -174,21 +178,7 @@ Day 4
   ~ TBA
 
 
-## Week 13 (12/01-12/04)
-
-Day 1
-  ~ TBA
-
-Day 2
-  ~ TBA
-
-Day 3
-  ~ TBA
-
-Day 4
-  ~ TBA
-
-## Week 14 (12/07-12/11)
+## Week 14 (04/11-04/15)
 
 Day 1
   ~ TBA

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="type-aliases-and-type-variants">Type Aliases and Type Variants</h1>
+<p>We continue our exploration of OCAML types with two concepts, type aliases and type variants.</p>
+<h2 id="type-aliases">Type Aliases</h2>
+<p>OCAML allows you to give alternative names to any existing type. This is known as a <strong>type alias</strong>.</p>
+<p>As a simple example, suppose are creating some functions for working with integer fractions, like <span class="math">\(\frac{5}{4}\)</span>. We want to define addition for such things, multiplication etc.</p>
+<p>We can represent a fraction as a pair <code>(5, 4)</code>. Now we can refer to these in our code via the type <code>int * int</code>, but that type describes pairs of integers in general. In our case these pairs of integers have a further meaning, and our type system doesn’t express that.</p>
+<p>This is a good use case for a type alias. We can write:</p>
+<pre><code>type fraction = int * int;;</code></pre>
+<p>Now from that point on in our code we can use <code>fraction</code> to describe a pair of integers that is meant to be a fraction. For example our definition for fraction multiplication might look like this (we will later do it in a more proper way, reducing the resulting fraction to simple terms):</p>
+<pre><code>let mult (((a, b), (a&#39;, b&#39;)) : fraction * fraction) : fraction = (aa&#39;, bb&#39;)</code></pre>
+<p>It is important to understand that as far as OCAML is concerned, there is no difference between <code>fraction</code> and <code>int * int</code>. So on occasion it might show you <code>int * int</code> instead of <code>fraction</code>, or the other way around. We have already experienced this situation, with the system showing <code>bytes</code> rather than <code>string</code>. This is because there is a built in type alias.</p>
+<h2 id="type-variants">Type Variants</h2>
+<p>Type variants are a much more powerful language construct. It allows us to construct what is often called a “one-of” type, where a value of this type falls into one or more a number of different alternatives. For instance we can define a “number” as something that is an integer or a float. The definition would look like this:</p>
+<pre><code>type number = IntN of int | FloatN of float</code></pre>
+<p>The capitalized words “IntN” and “FloatN” are called <em>constructors</em> and are used to identify which of the two <em>variants</em> a specific value is. Example values of type number would be <code>IntN 5</code> and <code>FloatN 2.3</code>.</p>
+<p>Contrast this with an “each-of” type, namely a pair <code>int * float</code>. In this case to get a value of the new type we had to use one value of each of the two types. In a type variant we only need to use one value from one of the related types.</p>
+<p>Variant types don’t always need to carry extra information. For example we can define a type that describes the card <code>suits</code>:</p>
+<pre><code>type suit = Clubs | Spades | Hearts | Diamonds</code></pre>
+<p>There are exactly 4 different values of type suit, represented by the 4 constructors above.</p>
+<p>We utilize a value of a variant type by doing a pattern matching via a <code>match-with</code> expression. For instance we can define a function</p>
+<pre><code>let is_black (s : suit) : bool =
+    match s with
+    | Clubs | Spades -&gt; true
+    | Hearts | Diamonds -&gt; false</code></pre>
+<p>As usual, OCAML will tell you if you missed a case, as long as you don’t use the catchall pattern (<code>_</code>).</p>
+<p>As another example, here is how we can convert a “number” to a float:</p>
+<pre><code>let to_float (n : number) : float =
+    match n with
+    | IntN i -&gt; float_of_int i
+    | FloatN f -&gt; f
+
+to_float (IntN 4)
+to_float (FloatN 2.3)</code></pre>
+<p>You have already seen variant types before, namely the option and list types. A value of type Option is a variant with two possibilities, <code>None</code> or <code>Some of t</code> where <code>t</code> is the contained type. Similarly for a list.</p>
+<h2 id="self-referential-types">Self-referential types</h2>
+<p>Type variants allow types to refer to themselves, allowing us to create some interesting recursive structures (and actually the list type falls into this category). For example we can define a binary tree with integers on the nodes as:</p>
+<pre><code>type itree = Nil | Node of itree * int * itree</code></pre>
+<p>So a value of type <code>itree</code> is either <code>Nil</code> a <code>Node</code> containing a triple of another <code>itree</code> (left subtree), an integer (the value at the node), and a another <code>itree</code> (right subtree). A “leaf” would then look like <code>Node (Nil, 4, Nil)</code>. Pattern matching allows for some interesting recursive processing of the tree.</p>
+<p>Notice this recursive nature of the definition: One of the variants for an <code>itree</code> expects other previously created <code>itree</code>s in it. If we didn’t have the <code>Nil</code> variant to get us started, we wouldn’t have been able to create any values of this type.</p>
+<h2 id="practice">Practice</h2>
+<ol style="list-style-type: decimal">
+<li>We already have defined a card “suit” type earlier. Define a card <code>value</code> type: The value of a card can be either a “numerical value”, which is meant to hold an integer from 2 to 10 but your type specification will only be able to require that it be integer, or it can hold one of the faces, listed as individual variants <code>Jack</code>, <code>Queen</code>, <code>King</code>, <code>Ace</code>. We do treat the ace as a special case. So your definition should have a total of 5 variants.</li>
+<li>Define a type alias that defines a <code>card</code> as a pair of a suit and a value.</li>
+<li>Define a type alias that specifies a <code>hand</code> as a list of cards.</li>
+<li>Write a function <code>is_valid</code> that takes as input a card and returns a boolean indicating whether it’s a valid card.</li>
+<li>Write a function <code>value</code> that takes as input a card and returns an integer indicating the card’s numerical value. Ace counts for 11, numerical values count as themselves and all faces count as 10.</li>
+<li>Write a function <code>hand_value</code> that takes as input a “hand” and returns the total value of the cards in the hand.</li>
+<li>Write a function <code>valid_hand</code> that takes as input a “hand” and returns a boolean indicating if it is a “valid hand”. A valid hand should consist of exactly 5 valid cards that are distinct. Implement any helper methods you need within the function.</li>
+</ol>
+</body>
+</html>
