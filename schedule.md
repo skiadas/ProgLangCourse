@@ -46,21 +46,21 @@ Day 3
   ~ [Polymorphic Types](notes/types_polymorphic.md)
 
 Day 4
-  ~ Function literals, functions as values
+  ~ Type inference
 
 ## Week  4 (02/01-02/05)
 
 Day 1
-  ~ Higher order functions
+  ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
 
 Day 2
-  ~ TBA
+  ~ Thunks
 
 Day 3
-  ~ TBA
+  ~ Currying
 
 Day 4
-  ~ TBA
+  ~ Higher order functions
 
 ## Week  5 (02/08-02/12)
 
