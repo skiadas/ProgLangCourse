@@ -17,14 +17,14 @@ type fraction = int * int;;
 
 Now from that point on in our code we can use `fraction` to describe a pair of integers that is meant to be a fraction. For example our definition for fraction multiplication might look like this (we will later do it in a more proper way, reducing the resulting fraction to simple terms):
 ```
-let mult (((a, b), (a', b')) : fraction * fraction) : fraction = (aa', bb')
+let mult (((a, b), (a', b')) : fraction * fraction) : fraction = (a * a', b * b')
 ```
 
 It is important to understand that as far as OCAML is concerned, there is no difference between `fraction` and `int * int`. So on occasion it might show you `int * int` instead of `fraction`, or the other way around. We have already experienced this situation, with the system showing `bytes` rather than `string`. This is because there is a built in type alias.
 
 ## Type Variants
 
-Type variants are a much more powerful language construct. It allows us to construct what is often called a "one-of" type, where a value of this type falls into one or more a number of different alternatives. For instance we can define a "number" as something that is an integer or a float. The definition would look like this:
+Type variants are a much more powerful language construct. It allows us to construct what is often called a "one-of" type, where a value of this type falls into one of a number of different alternatives. For instance we can define a "number" as something that is an integer or a float. The definition would look like this:
 ```
 type number = IntN of int | FloatN of float
 ```
@@ -38,7 +38,7 @@ Variant types don't always need to carry extra information. For example we can d
 type suit = Clubs | Spades | Hearts | Diamonds
 ```
 
-There are exactly 4 different values of type suit, represented by the 4 constructors above.
+There are exactly 4 different values of type suit, represented by the 4 constructors above. Thing kind of thing, where there is just a series of alternatives that carry no extra information, is often called an *enumeration*.
 
 We utilize a value of a variant type by doing a pattern matching via a `match-with` expression. For instance we can define a function
 ```
