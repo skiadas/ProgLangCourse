@@ -40,32 +40,34 @@ Day 1
   ~ [Tail Calls](notes/tail_calls.md)
 
 Day 2
-  ~ [Type aliases and Type variants](notes/type_variants.md)
+  ~ Recursion practice.
 
 Day 3
-  ~ [Polymorphic Types](notes/types_polymorphic.md)
+  ~ [Type aliases and Type variants](notes/type_variants.md)
+
+    [Assignment 3](assignments/hw3.md) due by class time, Wed, February 3rd.
 
 Day 4
-  ~ Type inference
+  ~ [Polymorphic Types](notes/types_polymorphic.md)
 
 ## Week  4 (02/01-02/05)
 
 Day 1
-  ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
+  ~ Type inference
 
 Day 2
-  ~ Thunks
+  ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
 
 Day 3
-  ~ Currying
+  ~ Thunks
 
 Day 4
-  ~ Higher order functions
+  ~ Currying
 
 ## Week  5 (02/08-02/12)
 
 Day 1
-  ~ TBA
+  ~ Higher order functions
 
 Day 2
   ~ TBA
