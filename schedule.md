@@ -53,13 +53,13 @@ Day 4
 Day 1
   ~ [Type aliases and Type variants](notes/type_variants.md)
 
-    [Assignment 3](assignments/hw3.md) due by class time, Wed, February 3rd.
+    [Assignment 3](assignments/hw3.md) due by class time, Monday, February 8th.
 
 Day 2
   ~ [Polymorphic Types](notes/types_polymorphic.md)
 
 Day 3
-  ~ Type inference
+  ~ [Type inference](notes/type_inference.md)
 
 Day 4
   ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
