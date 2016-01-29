@@ -46,34 +46,34 @@ Day 3
   ~ Recursion practice.
 
 Day 4
-  ~ [Type aliases and Type variants](notes/type_variants.md)
-
-    [Assignment 3](assignments/hw3.md) due by class time, Wed, February 3rd.
+  ~ Assignment 2 style reviews. [Recursion practice problems](notes/recursion_state.md)
 
 ## Week  4 (02/01-02/05)
 
 Day 1
-  ~ [Polymorphic Types](notes/types_polymorphic.md)
+  ~ [Type aliases and Type variants](notes/type_variants.md)
+
+    [Assignment 3](assignments/hw3.md) due by class time, Wed, February 3rd.
 
 Day 2
-  ~ Type inference
+  ~ [Polymorphic Types](notes/types_polymorphic.md)
 
 Day 3
-  ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
+  ~ Type inference
 
 Day 4
-  ~ Thunks
+  ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
 
 ## Week  5 (02/08-02/12)
 
 Day 1
-  ~ Currying
+  ~ Thunks
 
 Day 2
-  ~ Higher order functions
+  ~ Currying
 
 Day 3
-  ~ TBA
+  ~ Higher order functions
 
 Day 4
   ~ TBA
