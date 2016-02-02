@@ -35,8 +35,8 @@ val hd: (int * int) list -&gt; int * int</code></pre>
 <p>There is another kind of polymorphism, known as <strong>ad-hoc polymorphism</strong> is some circles, a special case of which is <strong>operator overloading</strong>. While in parametric polymorphism the actual function code that will be executed is essentially the same, in ad-hoc polymorphism the system has to choose which function to associate to an identifier/symbol based on information like the parameter types.</p>
 <p>This behavior is best exemplified in C++ streams. Think of the line:</p>
 <pre><code>cout &lt;&lt; s;</code></pre>
-<p>What code is executed by the above line? That completely depends on the type/class of <code>s</code>. C++ will look at that class and search in the definition of that class for an implementation of <code>&lt;&lt;</code>.</p>
-<p>Haskell implements this feature in a restricted form via what are called <em>type classes</em>, that we will not get into at the moment.</p>
+<p>What code is executed by the above line? That completely depends on the type/class of <code>s</code>. C++ will look at that class and search in the definition of that class for an implementation of <code>&lt;&lt;</code>. It is actually a bit more complicated, but that is the basic idea.</p>
+<p>Haskell implements this feature in a restricted form via what are called <em>type classes</em>, that we will not get into at the moment. OCAML doesn’t really have something analogous.</p>
 <h2 id="parametric-types-in-type-variants">Parametric Types in Type Variants</h2>
 <p>Parametric types can be used in type variant definitions. For example we can literally define the option type as follows:</p>
 <pre><code>type &#39;a option = None | Some of &#39;a</code></pre>
@@ -47,6 +47,6 @@ val hd: (int * int) list -&gt; int * int</code></pre>
 <pre><code>type &#39;a list = Nil | Cons of &#39;a * &#39;a list</code></pre>
 <p>Then to form the list <code>[1; 3; 4]</code> we could write <code>Cons (1, Cons (3, Cons (4, Nil)))</code>. It’s a bit ugly, but functional.</p>
 <h2 id="language-design-considerations">Language Design Considerations</h2>
-<p>All the above offers an interesting topic of conversation about language design. When you decide what features to put in a language, you have to decide how they will interact with each other, and what possibilities that creates. For example, if allow type variants and parametric types into our language, then we can get for free both option types and list types, as well as a host of other useful examples. We do not need to offer each one of those as “special cases”; we just provide the building blocks for creating them and then add those base examples in a standard library that gets loaded in. A general principle in language design is to keep the core language <em>small</em> but with <em>orthogonal features</em> that can be combined in useful ways.</p>
+<p>All the above offers an interesting topic of conversation about language design. When you decide what features to put in a language, you have to decide how they will interact with each other, and what possibilities that creates. For example, if we allow type variants and parametric types into our language, then we can get for free both option types and list types, as well as a host of other useful examples. We do not need to offer each one of those as “special cases”; we just provide the building blocks for creating them and then add those base examples in a standard library that gets loaded in. A general principle in language design is to keep the core language <em>small</em> but with <em>orthogonal features</em> that can be combined in useful ways.</p>
 </body>
 </html>

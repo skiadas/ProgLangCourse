@@ -41,9 +41,9 @@ This behavior is best exemplified in C++ streams. Think of the line:
 cout << s;
 ```
 
-What code is executed by the above line? That completely depends on the type/class of `s`. C++ will look at that class and search in the definition of that class for an implementation of `<<`.
+What code is executed by the above line? That completely depends on the type/class of `s`. C++ will look at that class and search in the definition of that class for an implementation of `<<`. It is actually a bit more complicated, but that is the basic idea.
 
-Haskell implements this feature in a restricted form via what are called *type classes*, that we will not get into at the moment.
+Haskell implements this feature in a restricted form via what are called *type classes*, that we will not get into at the moment. OCAML doesn't really have something analogous.
 
 ## Parametric Types in Type Variants
 
@@ -67,6 +67,4 @@ Then to form the list `[1; 3; 4]` we could write `Cons (1, Cons (3, Cons (4, Nil
 
 ## Language Design Considerations
 
-All the above offers an interesting topic of conversation about language design. When you decide what features to put in a language, you have to decide how they will interact with each other, and what possibilities that creates. For example, if allow type variants and parametric types into our language, then we can get for free both option types and list types, as well as a host of other useful examples. We do not need to offer each one of those as "special cases"; we just provide the building blocks for creating them and then add those base examples in a standard library that gets loaded in. A general principle in language design is to keep the core language *small* but with *orthogonal features* that can be combined in useful ways.
-
-
+All the above offers an interesting topic of conversation about language design. When you decide what features to put in a language, you have to decide how they will interact with each other, and what possibilities that creates. For example, if we allow type variants and parametric types into our language, then we can get for free both option types and list types, as well as a host of other useful examples. We do not need to offer each one of those as "special cases"; we just provide the building blocks for creating them and then add those base examples in a standard library that gets loaded in. A general principle in language design is to keep the core language *small* but with *orthogonal features* that can be combined in useful ways.

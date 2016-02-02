@@ -28,7 +28,7 @@ in f 5;;</code></pre>
 <p>In fact in many ways the following two lines are equivalent:</p>
 <pre><code>let f = fun x -&gt; x + x
 let f x = x + x</code></pre>
-<p>In fact in many senses, the second version is simply “syntactic sugar” for the first version. To put it another way: Once we have “anonymous functions” in our language, and we have let bindings, we also automatically have “named functions”. The only exception to that is the fact that recursive functions are a bit harder to pull off, as since the anonymous function has no name it would be hard to call it recursively. We will revisit this topic later.</p>
+<p>The second version is simply “syntactic sugar” for the first version. To put it another way: Once we have “anonymous functions” in our language, and we have let bindings, we also automatically have “named functions”. The only exception to that is the fact that recursive functions are a bit harder to pull off, as since the anonymous function has no name it would be hard to call it recursively. We will revisit this topic later.</p>
 <p>Before moving on, let us consider using a previously defined function binding in a later assignment, like so:</p>
 <pre><code>let g x = x + 3
 let f1 = g
@@ -36,7 +36,7 @@ let f2 x = g x</code></pre>
 <p>Exercise:</p>
 <p>Describe the differences between the <code>f1</code> assignment and the <code>f2</code> assignment. Identify how they behave differently, and what may happen in the future. The <code>f2</code> assignment is often called <em>unnecessary function wrapping</em>.</p>
 <h2 id="functions-as-values">Functions as Values</h2>
-<p>We have briefly discussed the idea of functions as values. We talked that they are actually “closures”, i.e. the function bodies themselves but also the current environment at the point of definition. What we focus on this section is the idea that these closures can be the inputs to other functions, or the returned values from other functions.</p>
+<p>We have briefly discussed the idea of functions as values. We said that they are actually “closures”, i.e. the function bodies themselves together with the current environment at the point of definition. What we focus on in this section is the idea that these closures can be the inputs to other functions, or the returned values from other functions.</p>
 <p>Let’s look at an example: Here is a, perhaps somewhat silly, function “evaluate” that takes a pair of a function and a value, and returns the result of evaluating the function at that value:</p>
 <pre><code>let evaluate (f, x) = f x</code></pre>
 <p>Before we continue, use type inference to determine the type of this function.</p>

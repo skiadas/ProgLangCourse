@@ -27,7 +27,7 @@ let f = fun x -> x + x
 let f x = x + x
 ```
 
-In fact in many senses, the second version is simply "syntactic sugar" for the first version. To put it another way: Once we have "anonymous functions" in our language, and we have let bindings, we also automatically have "named functions". The only exception to that is the fact that recursive functions are a bit harder to pull off, as since the anonymous function has no name it would be hard to call it recursively. We will revisit this topic later.
+The second version is simply "syntactic sugar" for the first version. To put it another way: Once we have "anonymous functions" in our language, and we have let bindings, we also automatically have "named functions". The only exception to that is the fact that recursive functions are a bit harder to pull off, as since the anonymous function has no name it would be hard to call it recursively. We will revisit this topic later.
 
 Before moving on, let us consider using a previously defined function binding in a later assignment, like so:
 ```
@@ -42,7 +42,7 @@ Describe the differences between the `f1` assignment and the `f2` assignment. Id
 
 ## Functions as Values
 
-We have briefly discussed the idea of functions as values. We talked that they are actually "closures", i.e. the function bodies themselves but also the current environment at the point of definition. What we focus on this section is the idea that these closures can be the inputs to other functions, or the returned values from other functions.
+We have briefly discussed the idea of functions as values. We said that they are actually "closures", i.e. the function bodies themselves together with the current environment at the point of definition. What we focus on in this section is the idea that these closures can be the inputs to other functions, or the returned values from other functions.
 
 Let's look at an example: Here is a, perhaps somewhat silly, function "evaluate" that takes a pair of a function and a value, and returns the result of evaluating the function at that value:
 ```
