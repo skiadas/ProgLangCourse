@@ -64,6 +64,8 @@ Day 3
 Day 4
   ~ [Anonymous Functions, Functions as values](notes/functions_anonymous.md)
 
+    [Assignment 4](assignments/hw4.md) due Thursday, February 11th.
+
 ## Week  5 (02/08-02/12)
 
 Day 1

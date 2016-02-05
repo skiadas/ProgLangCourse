@@ -8,7 +8,7 @@ In this assignment we explore type variants. You will implement a number of func
 let f (x : t1) : t2 = ...
 ```
 
-As in prior assignment, you should not use any functions we have not learned about. These assignments are not about learning a number of library functions, but about delving deeply into fundamental building blocks of programming.
+As in prior assignments, you should not use any functions we have not learned about. These assignments are not about learning a number of library functions, but about delving deeply into fundamental building blocks of programming.
 
 Correctness of the solutions, including the types and whether the code loads, will count for 15 points. Your code MUST load with no errors and have the correct types. Otherwise you will receive 0 for correctness even if most of your functions are correct.
 
