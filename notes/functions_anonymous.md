@@ -73,3 +73,7 @@ We could then write our `mystery` function earlier as:
 ```
 let mystery = double (addTo 3)
 ```
+
+Functions that return functions as their values will play a recurring theme, especially in our study of currying in the next section.
+
+Question: Why does `addTo` work? Why does the returned function know what `x` is when it gets called later on?

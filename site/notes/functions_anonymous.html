@@ -51,5 +51,7 @@ let mystery = double add3</code></pre>
 <pre><code>let addTo x = fun y -&gt; x + y</code></pre>
 <p>We could then write our <code>mystery</code> function earlier as:</p>
 <pre><code>let mystery = double (addTo 3)</code></pre>
+<p>Functions that return functions as their values will play a recurring theme, especially in our study of currying in the next section.</p>
+<p>Question: Why does <code>addTo</code> work? Why does the returned function know what <code>x</code> is when it gets called later on?</p>
 </body>
 </html>

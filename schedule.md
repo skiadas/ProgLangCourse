@@ -67,13 +67,13 @@ Day 4
 ## Week  5 (02/08-02/12)
 
 Day 1
-  ~ Currying
+  ~ [Currying](notes/currying.md)
 
 Day 2
   ~ Higher order functions
 
 Day 3
-  ~ TBA
+  ~ List functions
 
 Day 4
   ~ TBA
@@ -81,7 +81,7 @@ Day 4
 ## Week  6 (02/15-02/19)
 
 Day 1
-  ~ Thunks
+  ~ TBA
 
 Day 2
   ~ TBA
@@ -90,6 +90,7 @@ Day 3
   ~ TBA
 
 Day 4
+  ~ TBA
 
 ## Week  7 (02/22-02/26)
 
