@@ -1,6 +1,6 @@
 # Assignment 4
 
-Thunks and symbol table.
+Thunks and symbol tables.
 
 In this assignment we are going to work on two interesting topics. The one is thunks.The other is symbol tables. You will also learn to use the Milestones and Labels features in GitHub.
 
