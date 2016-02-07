@@ -41,7 +41,7 @@ let curry f x y = f (x, y)</code></pre>
 <ol style="list-style-type: decimal">
 <li>Every function in OCAML takes exactly one argument. This will make it easy to implement the interpreter in the future, it matches the point of view taken by lambda calculus, and it is wonderfully simple and elegant.</li>
 <li>Having that argument be of type <code>unit</code>, with its unique value <code>()</code>, provides a way to have functions that essentially “take no argument” without having to code them in any special way.</li>
-<li>Having that argument be of tuple type offers us one way to write a “function of multiple arguments”, by having as its one argument a tuple <code>(x, y, z)</code> and using pattern-matching.</li>
+<li>Having that argument be of tuple type offers us one way to write a “function of multiple arguments”, by having as its one argument a tuple <code>(x, y, z)</code> and using pattern-matching. In the future however we will be avoiding this practice, in favor of curried functions. Tuples will be used mainly when a function needs to return more than one value.</li>
 <li>Having functions (and closures) as possible return values allows us to have multiple arguments in the curried sense described above, where we provide those arguments one at a time and each time we get as a return value a function. It is the fact that we have closures that makes this possible, as the returned values remember the values of the parameters to the function call that produced them.</li>
 </ol>
 </body>

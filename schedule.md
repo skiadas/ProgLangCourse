@@ -72,18 +72,20 @@ Day 1
   ~ [Currying](notes/currying.md)
 
 Day 2
-  ~ Higher order functions
+  ~ [Higher order functions](notes/functions_higher_order.md)
+
+    Assignment 5 due Monday, February 15th.
 
 Day 3
-  ~ List functions
+  ~ [List functions](notes/functions_list.md)
 
 Day 4
-  ~ TBA
+  ~ Introduction to Modules
 
 ## Week  6 (02/15-02/19)
 
 Day 1
-  ~ TBA
+  ~ Signatures and Modules, information hiding
 
 Day 2
   ~ TBA
