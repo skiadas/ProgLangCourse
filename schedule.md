@@ -74,7 +74,7 @@ Day 1
 Day 2
   ~ [Higher order functions](notes/functions_higher_order.md)
 
-    Assignment 5 due Monday, February 15th.
+    [Assignment 5](assignments/hw5.md) due Monday, February 15th.
 
 Day 3
   ~ [List functions](notes/functions_list.md)
