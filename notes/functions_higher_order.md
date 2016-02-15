@@ -29,8 +29,9 @@ Question: What is the type of `apply_f`? What is the type of `map`?
 
 So we might use this as follows:
 ```
-map (fun x -> x * x)              (* returns the "square a list" function *)
-map (fun x -> x * x) [1; 4; 6]
+let square = map (fun x -> x * x)      (* returns the "square a list" function *)
+square [1; 4; 6]
+map (fun x -> x * x) [1; 4; 6]         (* Equivalent to the line above *)
 ```
 
 Before we move on let us see a slightly different, and more common, way of writing this function, which will serve as a model for the functions we will write in the future:

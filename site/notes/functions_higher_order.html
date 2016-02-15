@@ -30,8 +30,9 @@
     in apply_f</code></pre>
 <p>Question: What is the type of <code>apply_f</code>? What is the type of <code>map</code>?</p>
 <p>So we might use this as follows:</p>
-<pre><code>map (fun x -&gt; x * x)              (* returns the &quot;square a list&quot; function *)
-map (fun x -&gt; x * x) [1; 4; 6]</code></pre>
+<pre><code>let square = map (fun x -&gt; x * x)      (* returns the &quot;square a list&quot; function *)
+square [1; 4; 6]
+map (fun x -&gt; x * x) [1; 4; 6]         (* Equivalent to the line above *)</code></pre>
 <p>Before we move on let us see a slightly different, and more common, way of writing this function, which will serve as a model for the functions we will write in the future:</p>
 <pre><code>let rec map f xs = match xs with
 | [] -&gt; []

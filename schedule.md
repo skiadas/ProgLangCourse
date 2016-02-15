@@ -72,26 +72,29 @@ Day 1
   ~ [Currying](notes/currying.md)
 
 Day 2
-  ~ [Higher order functions](notes/functions_higher_order.md)
+  ~ [Exceptions and exception handling](notes/exceptions.md)
 
-    [Assignment 5](assignments/hw5.md) due Monday, February 15th.
+    [Assignment 5](assignments/hw5.md) due Wednesday, February 17th.
 
 Day 3
-  ~ [List functions](notes/functions_list.md)
+  ~ [Higher order functions](notes/functions_higher_order.md)
+
 
 Day 4
-  ~ Introduction to Modules
+  ~ [List functions](notes/functions_list.md)
 
 ## Week  6 (02/15-02/19)
 
 Day 1
-  ~ Signatures and Modules, information hiding
+  ~ Introduction to Modules
+
+    [Assignment 6](assignments/hw6.md) due Monday, February 22nd.
 
 Day 2
-  ~ TBA
+  ~ Signatures and Modules, information hiding
 
 Day 3
-  ~ TBA
+  ~ Symbol tables: A case study
 
 Day 4
   ~ TBA
