@@ -77,32 +77,32 @@ Day 2
     [Assignment 5](assignments/hw5.md) due Wednesday, February 17th.
 
 Day 3
-  ~ [Higher order functions](notes/functions_higher_order.md)
+  ~ Sick day
 
 
 Day 4
-  ~ [List functions](notes/functions_list.md)
+  ~ Sick day
 
 ## Week  6 (02/15-02/19)
 
 Day 1
-  ~ Introduction to Modules
+  ~ [Higher order functions](notes/functions_higher_order.md)
 
     [Assignment 6](assignments/hw6.md) due Monday, February 22nd.
 
 Day 2
-  ~ Signatures and Modules, information hiding
+  ~ [List functions](notes/functions_list.md)
 
 Day 3
-  ~ Symbol tables: A case study
+  ~ Introduction to Modules
 
 Day 4
-  ~ TBA
+  ~ Signatures and Modules, information hiding
 
 ## Week  7 (02/22-02/26)
 
 Day 1
-  ~ TBA
+  ~ Symbol tables: A case study
 
 Day 2
   ~ TBA
