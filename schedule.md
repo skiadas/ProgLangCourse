@@ -94,7 +94,9 @@ Day 2
   ~ [List functions](notes/functions_list.md)
 
 Day 3
-  ~ Introduction to Modules
+  ~ [Introduction to Modules](notes/modules.md)
+
+    [Assignment 7](assignments/hw7.md) due Friday, February 26th.
 
 Day 4
   ~ Signatures and Modules, information hiding
@@ -105,13 +107,13 @@ Day 1
   ~ Symbol tables: A case study
 
 Day 2
-  ~ TBA
+  ~ **MIDTERM**
 
 Day 3
   ~ TBA
 
 Day 4
-  ~ **MIDTERM**
+  ~ TBA
 
 ## Week  8 (02/29-03/04)
 

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="modules">Modules</h1>
+<p>Modular design has been a fundamental programming technique since the 70s. <strong>Modules</strong> are <em>separate</em>, <em>inter-changeable components</em> that represent a certain clearly identified part of the program and contain everything needed for the relevant computation.</p>
+<p>Here are the key features of a module:</p>
+<ul>
+<li>It <em>encapsulates</em> the code and data needed to implement a particular functionality, into a single packaged unit (often its own file) protected from the rest of the program.</li>
+<li>It provides a clear interface that specifies how clients/other modules can access this functionality. Access to the module is restricted to the possibilities offered through the interface.</li>
+<li>It can be interchanged with any module that provides the same interface.</li>
+</ul>
+<p>In OCAML, there are two new language constructs that allow us to create modules: <em>signatures</em> (interfaces) and <em>structures</em> (the actual module implementations). We will examine both of these in a specific example.</p>
+<h2 id="signatures">Signatures</h2>
+<p>A <strong>signature</strong>, also known as a <strong>module type</strong>, specifies the interface for a module. It consists of a series of declarations of provided bindings and types. The signature cannot contain any normally executable code.</p>
+<p>For an example, suppose we were trying to build a “Fraction” module to work with integer fractions. Let us think of what this module might contain:</p>
+<ul>
+<li>A new type to represent fractions.</li>
+<li>Ways to create a fraction from an integer or from two integers.</li>
+<li>An exception to throw if we attempt to divide by 0.</li>
+<li>Perhaps bindings for the special “fractions/numbers” zero and one.</li>
+<li>Ways to add, subtract, multiply and divide fractions.</li>
+<li>A way to turn a fraction into a string.</li>
+<li>A way to obtain the numerator and denominator of a fraction.</li>
+<li>A way to determine if two fractions are equal.</li>
+</ul>
+<p>The important thing here is that as far as the outside world is concerned, they do not need to know exactly how we are going to do these things, they just need to be able to call them.</p>
+<p>This is the job of the signature, it tells everyone else of the capabilities we will offer. Here’s how this might look like:</p>
+<pre><code>(* Signatures are typically named using all caps and underscores where needed *)
+module type FRACTION = sig
+
+  (* The type for fractions. Notice that it is &quot;abstract&quot;.
+     We cannot create elements of this type directly. *)
+  type frac
+
+  exception DivisionByZero
+
+  (* Some constant values *)
+  val zero : frac
+  val one : frac
+
+  (* Functions for creating fractions *)
+  val frac_of_int : int -&gt; frac
+  val frac_of_pair : int -&gt; int -&gt; frac
+
+  (* Functions that use fractions *)
+  val add : frac -&gt; frac -&gt; frac
+  val sub : frac -&gt; frac -&gt; frac
+  val mul : frac -&gt; frac -&gt; frac
+  val div : frac -&gt; frac -&gt; frac
+  val string_of_frac : frac -&gt; string
+  val float_of_frac : frac -&gt; float
+  val pair_of_frac : frac -&gt; int * int    (* num/denom *)
+end</code></pre>
+<p>As another example, imagine a “set” class for holding sets of elements of the same type. Then we might have a signature for that module that looks like this:</p>
+<pre><code>module type SET = sig
+  type &#39;a set     (* It is a container type, it must take a type parameter *)
+
+  (* Functions for creating/adding to sets *)
+  val empty : &#39;a set
+  val insert : &#39;a set -&gt; &#39;a -&gt; &#39;a set
+  val set_of_list : &#39;a list -&gt; &#39;a set
+
+  (* Functions for manipulating sets *)
+  val contains : &#39;a set -&gt; &#39;a -&gt; bool
+  val is_empty : &#39;a set -&gt; bool
+  val size : &#39;a set -&gt; int
+  val union : &#39;a set -&gt; &#39;a set -&gt; &#39;a set
+  ....
+end</code></pre>
+<h2 id="structures">Structures</h2>
+<p>Structures are the standard way to implement a module. They may define many more things than what a corresponding signature suggests, and these things will not be visible to the rest of the program.</p>
+<p>Let us see for example how we might implement the structure for fractions. We need to make certain decisions:</p>
+<ul>
+<li>We will represent a fraction as a pair of a numerator and a denominator.</li>
+<li>We will require these the two terms have been reduced (no common terms) and so that the denominator is a positive number. This is called an <strong>invariant</strong>. It is a property that we will ensure all our fraction values have.</li>
+<li>Functions that create fractions will be responsible for establishing the invariant in the first place.</li>
+<li>Functions that use fractions can rely on that invariant for their work, and they maintain it.</li>
+<li>The fact that our type is abstract and not visible to the outside world means we get to control how our fractions are created. We can therefore control that all fractions have the invariant property. For example, if someone was allowed to create a fraction by simply providing the pair <code>(4, 2)</code>, then other functions would try to use it and they may assume the invariant, which would be a mistake in this case.</li>
+</ul>
+<p>Here’s a possible implementation. It requires a function <code>gcd</code> for computing the greatest common divisor between two numbers.</p>
+<pre><code>(* Modules are upper-cased *)
+module Fraction : FRACTION = struct
+  type frac = int * int
+
+  exception DivisionByZero
+
+  let gcd a b = ...
+
+  let zero = (0, 1)
+  let one = (1, 1)
+
+  let frac_of_int i = (i, 1)
+  let frac_of_pair num denom =
+    let d = gcd num denom
+    in if denom = 0 then raise DivisionByZero
+       else if denom &gt; 0
+            then (num / d, denom / d)
+            else (- num / d, - denom / d)
+
+  let add (n1, d1) (n2, d2) = frac_of_pair (n1 * d2 + n2 * d1, d1 * d2)
+  let sub (n1, d1) (n2, d2) = add (n1, d1) (-n2, d2)
+  let mul (n1, d1) (n2, d2) = frac_of_pair (n1 * n2, d1 * d2)
+  let div (n1, d1) (n2, d2) = frac_of_pair (n1 * d2 + n2 * d1, d1 * d2)
+
+  let string_of_frac (n, d) = string_of_int n ^ &quot;/&quot; ^ string_of_int d
+  let float_of_frac (n, d) = float n /. float d
+  let pair_of_frac (n, d) = (n, d)
+end</code></pre>
+</body>
+</html>
