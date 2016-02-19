@@ -99,12 +99,12 @@ Day 3
     [Assignment 7](assignments/hw7.md) due Friday, February 26th.
 
 Day 4
-  ~ Signatures and Modules, information hiding
+  ~ [References and mutation](notes/references.md)
 
 ## Week  7 (02/22-02/26)
 
 Day 1
-  ~ Symbol tables: A case study
+  ~ TBA
 
 Day 2
   ~ **MIDTERM**

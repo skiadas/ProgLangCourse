@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="references">References</h1>
+<p>So far we have examined functional programming concepts and we have shied away from the important topic of mutation, a topic familiar to those from programming languages like Java and C.</p>
+<h2 id="structural-mutation-and-variable-mutation">Structural Mutation and Variable Mutation</h2>
+<h3 id="variable-mutation">Variable Mutation</h3>
+<p>Mutation simply means “changing the value of something”. For instance if we have code like the following in Python:</p>
+<pre class="sourceCode python"><code class="sourceCode python">i = <span class="dv">0</span>
+j = i             <span class="co"># i = 0     j = 0</span>
+<span class="kw">def</span> getsum ():
+    <span class="kw">return</span> i + j
+
+<span class="dt">print</span>(getsum())
+i = i + <span class="dv">1</span>         <span class="co"># i = 1     j = 0</span>
+<span class="dt">print</span>(getsum())
+j = j + <span class="dv">4</span>         <span class="co"># i = 1     j = 4</span>
+<span class="dt">print</span>(getsum())</code></pre>
+<p>We see the value of <code>i</code> and <code>j</code> changes as the program evolves. They are still the same <code>i</code>, <code>j</code> variables, and the function <code>getsum</code> uses them. But the result of calling <code>getsum</code> depends on <em>when</em> we call <code>getsum</code>; it will use whatever value those two variables have at the time. This is known as <strong>variable mutation</strong>, as opposed to the <em>structural mutation</em> we will see in a little while.</p>
+<p>Before we do that, it is important to talk about <strong>aliasing</strong>. Note the line <code>j = i</code>, where we have told Python to set a variable equal to another variable. Every time we do this we have to ask if we have created an “alias”. Is the variable <code>j</code> from this point forward interchangeable with the variable <code>i</code>? Are they both from now on pointing to the “same value”? The answer is of course no; we can increment <code>i</code> without a corresponding change in <code>j</code>. This is in general the case with variable mutation.</p>
+<h3 id="structural-mutation">Structural Mutation</h3>
+<p>There is a slightly different kind of mutation, called structural mutation, that we are all mostly familiar with from most object-oriented programming languages. In Python a simple example of it might look as follows:</p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="kw">class</span> Counter():
+   <span class="kw">def</span> <span class="ot">__init__</span>(<span class="ot">self</span>):
+      <span class="ot">self</span>.i = <span class="dv">0</span>
+
+   <span class="kw">def</span> incr(<span class="ot">self</span>):
+      <span class="ot">self</span>.i += <span class="dv">1</span>
+      <span class="kw">return</span> <span class="ot">self</span>.i
+
+x = Counter()           <span class="co"># x.i = 0</span>
+y = x                   <span class="co"># literally the same &quot;object&quot; as x</span>
+<span class="dt">print</span>(x.incr())         <span class="co"># Increments both x and y</span>
+<span class="dt">print</span>(y.incr())         <span class="co"># Increments both x and y</span></code></pre>
+<p>In this example, we have an “object” that contains the value in its property <code>i</code>. And we can change the value that is stored there. At the same time, another variable <code>y</code> is bound to that same object <code>x</code>, and these two are now <strong>aliased</strong>: A change in the one object is reflected in the “other” (though there really isn’t another object, they are the same object).</p>
+<p>Those familiar with pointers know that pointers lie at the heart of the idea of aliasing. For example we could do the following in C:</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="ot">#include &lt;stdio.h&gt;</span>
+<span class="dt">int</span> i = <span class="dv">0</span>;
+<span class="dt">int</span> *p1, p2, p3;
+
+<span class="dt">int</span> main() {
+   <span class="dt">int</span> *p1 = &amp;i;
+   <span class="dt">int</span> *p2 = p1;   <span class="co">// p1, p2 both point to the same memory, where i is stored</span>
+   <span class="dt">int</span> j = *p1;
+   printf(<span class="st">&quot;%i %i %i %i</span><span class="ch">\n</span><span class="st">&quot;</span>, i, j, *p1, *p2);
+   i = i + <span class="dv">1</span>;
+   printf(<span class="st">&quot;%i %i %i %i</span><span class="ch">\n</span><span class="st">&quot;</span>, i, j, *p1, *p2);
+   *p1 += <span class="dv">1</span>;
+   printf(<span class="st">&quot;%i %i %i %i</span><span class="ch">\n</span><span class="st">&quot;</span>, i, j, *p1, *p2);
+   <span class="kw">return</span> <span class="dv">0</span>;
+}</code></pre>
+<p>In this example we have created the two pointers that both point to the same point in memory. When we later change the value of that point in memory, that information is reflected in all pointers that still point to that same location.</p>
+<p>This is called <strong>structural mutation</strong>, because we are not really changing the value of the pointers, but instead we make adjustments to the structure the pointers are pointing to.</p>
+<p>The essential point is that these are two subtly different kinds of mutation, and it is important to identify the difference between them. Languages like OCAML allow the latter, but not the former. We will see now how.</p>
+<h2 id="references-1">References</h2>
+<p>Essentially references in OCAML are a bit like pointers, only safer and with limited power.</p>
+<p>TODO</p>
+</body>
+</html>
