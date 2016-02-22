@@ -84,7 +84,19 @@ y = x                   <span class="co"># literally the same &quot;object&quot;
 <p>This is called <strong>structural mutation</strong>, because we are not really changing the value of the pointers, but instead we make adjustments to the structure the pointers are pointing to.</p>
 <p>The essential point is that these are two subtly different kinds of mutation, and it is important to identify the difference between them. Languages like OCAML allow the latter, but not the former. We will see now how.</p>
 <h2 id="references-1">References</h2>
-<p>Essentially references in OCAML are a bit like pointers, only safer and with limited power.</p>
-<p>TODO</p>
+<p>Essentially references in OCAML are a bit like pointers, only safer and with limited power. If you think about it, the main things we need from pointers are the following:</p>
+<ol style="list-style-type: decimal">
+<li>A way to create a pointer to some new memory location.</li>
+<li>A way to read the value that is stored in that location.</li>
+<li>A way to change the value that is stored in that location.</li>
+</ol>
+<p>Any implementation of a pointer-like mechanic must provide these three features. In a statically typed language we need some new types in addition to all that. So let us get started:</p>
+<ul>
+<li>We have a new kind of value, <code>ref v</code> where <code>v</code> is some other value. This is meant to be sort of like a pointer to the value <code>v</code>.</li>
+<li>We have a new type <code>'a ref</code> for a “reference to a value of type <code>'a</code>”.</li>
+<li>We have an assignment function <code>r := e</code> which has type <code>'a ref * 'a -&gt; unit</code>. It is evaluated by evaluating the reference <code>r</code> first, then evaluating the expression <code>e</code> to a value, then storing that value in the reference.</li>
+<li>We have a dereference function <code>!r</code> which has type <code>'a ref -&gt; 'a</code>. It is evaluated by first evaluating <code>r</code> to a reference, then getting the value that is stored in there.</li>
+<li>Lastly, in order for these to have any practical significance, we need a way to have expressions one after the other, in a sequencing style <code>e1;e2</code>. This sequence expression evaluates <code>e1</code> first, then discards the result and evaluates <code>e2</code>.</li>
+</ul>
 </body>
 </html>

@@ -71,6 +71,17 @@ The essential point is that these are two subtly different kinds of mutation, an
 
 ## References
 
-Essentially references in OCAML are a bit like pointers, only safer and with limited power.
+Essentially references in OCAML are a bit like pointers, only safer and with limited power. If you think about it, the main things we need from pointers are the following:
 
-TODO
+1. A way to create a pointer to some new memory location.
+2. A way to read the value that is stored in that location.
+3. A way to change the value that is stored in that location.
+
+Any implementation of a pointer-like mechanic must provide these three features. In a statically typed language we need some new types in addition to all that. So let us get started:
+
+- We have a new kind of value, `ref v` where `v` is some other value. This is meant to be sort of like a pointer to the value `v`.
+- We have a new type `'a ref` for a "reference to a value of type `'a`".
+- We have an assignment function `r := e` which has type `'a ref * 'a -> unit`. It is evaluated by evaluating the reference `r` first, then evaluating the expression `e` to a value, then storing that value in the reference.
+- We have a dereference function `!r` which has type `'a ref -> 'a`. It is evaluated by first evaluating `r` to a reference, then getting the value that is stored in there.
+- Lastly, in order for these to have any practical significance, we need a way to have expressions one after the other, in a sequencing style `e1;e2`. This sequence expression evaluates `e1` first, then discards the result and evaluates `e2`.
+
