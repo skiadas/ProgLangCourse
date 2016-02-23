@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="records-and-objects">Records and Objects</h1>
+<p>We will start by discussing records, a convenient way of arranging information together. Later on we combine records with closures and mutation to discuss concepts related to objects and object-oriented programming.</p>
+<h2 id="records">Records</h2>
+<p>A <strong>record</strong> is a bit like a tuple, except that each component is identified by a “name” instead, typically called a <em>field</em>. It must start with a lowercase letter. Here is an example:</p>
+<pre><code>{ a=4; b=&quot;hi!&quot;; c=[1; 2] }</code></pre>
+<p>This record would have a <em>record type</em>:</p>
+<pre><code>{ a: int; b: string; c: int list }</code></pre>
+<p>One peculiar feature in OCAML is that a record type needs to be given a type alias first before a value of its type can be formed. So for example we can do:</p>
+<pre><code>type t = { a: int; b: string; c: int list }
+let rcrd = { a=4; b=&quot;hi!&quot;; c=[1; 2] }</code></pre>
+<p>Accessing the values in a record can be done in two ways. The one is a pattern match:</p>
+<pre><code>let { a=a; b=b; c=c } = rcrd in c
+(* Convenient form when using var names same as fields *)
+let { a; b; c } = rcrd in c</code></pre>
+<p>The other is with a “record access” notation:</p>
+<pre><code>rcrd.c</code></pre>
+<p>In general when records are concerned, it is best that their types are specified beforehand rather than inferred. For instance if all the information we have about a record is the expression <code>rcrd.c</code>, then all we know is that it has a field “c” and not much else. Type reconstruction becomes a bit harder. We shall revisit this issue when we discuss subtyping.</p>
+<h2 id="objects">Objects</h2>
+<p>Even though OCAML natively supports objects, we will instead approach the subject from an exploratory direction: What are the key language constructs needed in order to have “objects”? What are objects anyway?</p>
+<ul>
+<li>Objects bring together data (<strong>member variables</strong>) and code (<strong>methods</strong>) that acts on this data.</li>
+<li>In most cases objects are organized in “classes”. These classes often house “class variables” that all objects can access, as well as the object methods (occasionally also class methods).</li>
+<li>The method to be called depends on the object and is determined at runtime via a process known as <strong>dynamic dispatch</strong>. This is effectively a form of ad-hoc polymorphism.</li>
+<li>Objects typically provide <strong>encapsulation</strong>: From “outside” the object can only access the member variables via the object’s methods. This encourages decoupling.</li>
+<li>Most (but not all) object-oriented languages allow <strong>inheritance</strong>, where the objects of one class can “inherit” from another class, having the same method signatures but perhaps overriding some of the methods and also adding new methods. In general an object from a subclass can be used anywhere that an object from its superclass is expected. On a static-typed system this would require subtyping, which OCAML does not really provide. We will look at some minimal examples of inheritance now, and will revisit the topic again when we discuss Racket.</li>
+</ul>
+<p>We can already do some of the above with the tools we have so far:</p>
+<ul>
+<li>We can expose the object’s methods by providing a record, since functions are first class values that can be stored anywhere any other kind of value can.</li>
+<li>We can make sure that the closure of the functions contains the member variables. Since the closure is not directly accessible to the rest of the program, we achieve encapsulation. We can do this via a “constructor” function, that takes as input whatever information is needed to create the object, then creates any other variables that are needed before returning a record of the object’s methods.</li>
+<li>Class variables can be established by having another function that creates the constructor function. Then the closure of the constructor function can contain any “class variables”.</li>
+<li>Using references for those variables allows the methods to mutate the object’s variables.</li>
+</ul>
+<p>Here is perhaps the simplest object we can imagine, a “counter”:</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> counterObj = { incr: <span class="dt">unit</span> -&gt; <span class="dt">unit</span>; value: <span class="dt">unit</span> -&gt; <span class="dt">int</span>; reset: <span class="dt">unit</span> -&gt; <span class="dt">unit</span> }
+<span class="kw">let</span> makeCounter init =
+    <span class="kw">let</span> r = <span class="dt">ref</span> init
+    <span class="kw">in</span> {
+        incr = (<span class="kw">fun</span> () -&gt; r := !r + <span class="dv">1</span>);
+        value = (<span class="kw">fun</span> () -&gt; !r);
+        reset = (<span class="kw">fun</span> () -&gt; r := init)
+    }</code></pre>
+<p>Here is an interaction with these objects:</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">let</span> c1 = makeCounter <span class="dv">5</span>
+c1.value()     <span class="co">(* ---&gt; 5 *)</span>
+c1.incr()
+c1.value()     <span class="co">(* ---&gt; 6 *)</span>
+c1.reset()
+c1.value()     <span class="co">(* ---&gt; 5 *)</span></code></pre>
+<p>Another key characteristic is that methods can call other methods from the object, possibly some defined in a superclass. We will see other ways of doing this in the future, but for now we can use recursion, and have the record we return be part of the closure of the functions in it:</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> counterObj = { incr: <span class="dt">unit</span> -&gt; <span class="dt">unit</span>; value: <span class="dt">unit</span> -&gt; <span class="dt">int</span>;
+                    add: <span class="dt">int</span> -&gt; <span class="dt">unit</span>; reset: <span class="dt">unit</span> -&gt; <span class="dt">unit</span> }
+<span class="kw">let</span> makeCounter init =
+    <span class="kw">let</span> r = <span class="dt">ref</span> init <span class="kw">in</span>
+    <span class="kw">let</span> <span class="kw">rec</span> o = {
+            incr = (<span class="kw">fun</span> () -&gt; o.add <span class="dv">1</span>);
+            value = (<span class="kw">fun</span> () -&gt; !r);
+            add = (<span class="kw">fun</span> i -&gt; r := !r + i);
+            reset = (<span class="kw">fun</span> () -&gt; r := init)
+        }
+    <span class="kw">in</span> o</code></pre>
+<p>We will revisit objects later when we discuss Racket.</p>
+<h3 id="practice">Practice</h3>
+<ol style="list-style-type: decimal">
+<li>Create a constructor for “account” objects. An account object should keep a “balance” as, a floating point number, that is initialized to 0, and should allow one to “deposit” a positive amount or “withdraw” a positive amount as long as the balance would not go below 0. It should also have a “checkBalance” method to report the current balance.</li>
+<li>Create a constructor for “bank” objects. A bank object contains a list of accounts, starting with an empty list, and supports the following operations:
+<ul>
+<li>Creating (and returning) a new account (and also updating the list of accounts)</li>
+<li>Computing the number of accounts</li>
+<li>Computing the total balance in all accounts</li>
+<li>Increasing all accounts by a <code>r</code> interest rate (e.g. <code>r=0.05</code> for a 5% increase in all accounts)</li>
+</ul></li>
+</ol>
+</body>
+</html>

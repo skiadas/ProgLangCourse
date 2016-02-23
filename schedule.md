@@ -104,13 +104,13 @@ Day 4
 ## Week  7 (02/22-02/26)
 
 Day 1
-  ~ TBA
+  ~ Sick Day
 
 Day 2
-  ~ **MIDTERM**
+  ~ [Delayed Evaluation](notes/delayed_eval.md)
 
 Day 3
-  ~ TBA
+  ~ [Records and Objects](notes/records_objects.md)
 
 Day 4
   ~ TBA
@@ -125,7 +125,7 @@ Day 1
   ~ TBA
 
 Day 2
-  ~ TBA
+  ~ **MIDTERM**
 
 Day 3
   ~ TBA
