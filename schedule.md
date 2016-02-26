@@ -113,7 +113,7 @@ Day 3
   ~ [Records and Objects](notes/records_objects.md)
 
 Day 4
-  ~ TBA
+  ~ [Building an Interpreter](notes/interpreter.md)
 
 ## Week  8 (02/29-03/04)
 
