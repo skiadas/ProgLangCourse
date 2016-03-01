@@ -26,8 +26,8 @@ The "types" files are the heart of the implementation. There are two files, one 
 The "mli" file is an interface file, basically implementing what we called *module signatures*. It contains definitions for the methods and types that other files need to access. More precisely, it contains the following:
 
 - The exceptions that you may need to raise, that suggest something went wrong in the process (say you are using an identifier that doesn't have a value yet).
-- A variant type `resultS` for the different "surface language" expressions, the kinds of constructs that the language's user would enter as instructions.
-- A variant type `resultC` for the different "core language" expressions, the fundamental building blocks of the language.
+- A variant type `exprS` for the different "surface language" expressions, the kinds of constructs that the language's user would enter as instructions.
+- A variant type `exprC` for the different "core language" expressions, the fundamental building blocks of the language.
 - A variant type `value` for the kinds of values that the evaluation of an expression in the language may produce.
 - An "environment" type `env` to use for symbol lookup, along with methods for storing something in an environment or looking something up in it.
 - A `desugar` function that turns a surface language expression to a core language expression. You will need to implement a new branch of this function after each construct you add to the language.

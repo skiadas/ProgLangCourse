@@ -36,8 +36,8 @@
 <p>The “mli” file is an interface file, basically implementing what we called <em>module signatures</em>. It contains definitions for the methods and types that other files need to access. More precisely, it contains the following:</p>
 <ul>
 <li>The exceptions that you may need to raise, that suggest something went wrong in the process (say you are using an identifier that doesn’t have a value yet).</li>
-<li>A variant type <code>resultS</code> for the different “surface language” expressions, the kinds of constructs that the language’s user would enter as instructions.</li>
-<li>A variant type <code>resultC</code> for the different “core language” expressions, the fundamental building blocks of the language.</li>
+<li>A variant type <code>exprS</code> for the different “surface language” expressions, the kinds of constructs that the language’s user would enter as instructions.</li>
+<li>A variant type <code>exprC</code> for the different “core language” expressions, the fundamental building blocks of the language.</li>
 <li>A variant type <code>value</code> for the kinds of values that the evaluation of an expression in the language may produce.</li>
 <li>An “environment” type <code>env</code> to use for symbol lookup, along with methods for storing something in an environment or looking something up in it.</li>
 <li>A <code>desugar</code> function that turns a surface language expression to a core language expression. You will need to implement a new branch of this function after each construct you add to the language.</li>

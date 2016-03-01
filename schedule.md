@@ -115,6 +115,8 @@ Day 3
 Day 4
   ~ [Building an Interpreter](notes/interpreter.md)
 
+    [Assignment 8](assignments/hw8.md) due Friday, March 14th.
+
 ## Week  8 (02/29-03/04)
 
 BREAK
