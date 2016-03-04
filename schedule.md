@@ -127,7 +127,7 @@ Day 1
   ~ TBA
 
 Day 2
-  ~ **MIDTERM**
+  ~ **MIDTERM**  ([study guide](notes/midterm_study_guide.md))
 
 Day 3
   ~ TBA
