@@ -124,7 +124,7 @@ BREAK
 ## Week  9 (03/07-03/11)
 
 Day 1
-  ~ TBA
+  ~ [Introduction to Racket](notes/racket_intro.md)
 
 Day 2
   ~ **MIDTERM**  ([study guide](notes/midterm_study_guide.md))
