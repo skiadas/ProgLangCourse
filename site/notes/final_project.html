@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="final-project-assignment">Final Project Assignment</h1>
+<p>Your final project will be to implement an interpreter for a programming language. There are two main choices on what features to add to your language, that we will discuss below. But in all cases your submission will contain the following:</p>
+<ul>
+<li>You need to choose a good name for your language. <a href="http://c2.com/cgi/wiki?ProgrammingLanguageNamingPatterns">This page</a> may act as inspiration. Or not.</li>
+<li>You will create a new GitHub repository, named after the name you choose for your language. It will contain the following.
+<ul>
+<li>For group work, the repository will be officially in one student’s GitHub page. You should NOT fork it to the other students’ accounts. Everyone will be accessing the same repository.</li>
+<li>Under Settings in the repository’s GitHub page, you should enable the “Issues” by checking the corresponding “Options” checkbox.</li>
+<li>Still in Settings, in the “Collaborators” sidebar, you should add each team-mate as a collaborator.</li>
+<li>You should use GitHub issues to manage the project. You should create issues, use labels and milestones, and “assign” issues to team members if one member is assigned to look at a particular issue.</li>
+<li>Part of your project grade will be based on an evaluation of the extent to which you used the various GitHub features, and how you linked them to the individual commits.</li>
+<li>I strongly encourage you to work in <a href="http://www.extremeprogramming.org/rules/pair.html">pair programming</a> style, rather than simply split the work up among the team members.</li>
+<li>If you run into problems with Git or GitHub, do not hesitate to ask for help. On occasion merging the work between two people can get complicated, if they have both checked out the same version, then did conflicting changes to it.</li>
+<li>Always check out the most recent version of the repository before starting your work. Always commit your most recent work before ending the session. This will minimize the number of merge conflicts you have to deal with.</li>
+<li>You can also create “branches” for trying out some experimental features without messing with the “main” branch. Talk to me if you want to do this. Git makes it fairly easy to do it.</li>
+</ul></li>
+<li>You should have a file named <code>README.md</code> in your root directory, with instructions on how one should compile and run the interpreter for your language. This should follow the so-called “GitHub flavored markdown” format, described <a href="https://help.github.com/categories/writing-on-github/">here</a>. The same is true for all <code>.md</code> files.</li>
+<li>A document <code>semantics.md</code> that describes the specific syntax and semantics of all features in your language.</li>
+<li>A document <code>details.md</code> that explains the choices you made in the surface and core languages, problems you encountered and how you addressed them and so on. You can add to this file as you go on, then clean it up towards the end.</li>
+<li>A file with examples of programming in your language. One should be able to send that as input to your interpreter as is. The examples should be rich enough to showcase the power of the language.</li>
+<li>The lexer, parser and interpreter for your language. These will typically be 5 files: <code>driver.ml</code>, <code>lexer.mll</code>, <code>parser.mly</code>, <code>types.mli</code> and <code>types.ml</code>, as described in the programming assignments.</li>
+<li>There should be a test file <code>tests.ml</code> that should test the <code>types.ml</code> file. So you should be writing expressions directly into the core language and evaluate them, and test if the result is expected, and also expressions written in the surface language and test that they convert to the right core language constructs (or that they evaluate to the right value).</li>
+<li>You should create a <code>.gitignore</code> file that lists the “derived” files that should not be part of commits (e.g. the <code>parser.ml</code> and <code>parser.mli</code> files that are automatically generated). You can look at the <code>.gitignore</code> file that the assignments project has for inspiration.</li>
+<li>Your language should at the very least contain numbers. You can distinguish between integers and floats, or even have fractions, or just treat them all as one type. One should be able to perform basic arithmetic operations on numbers. You can add more operations if you wish.</li>
+<li>Your language should at the very least contain booleans. It should have conditionals, logical operations, and comparison operators, including equality.</li>
+<li>Remember to try to keep the core language as small as possible. Each time you want to add a new feature, think whether you can do it simply in the surface language, without changing the core language.</li>
+</ul>
+<p>You can choose to implement one of the following two types of languages. These sections describe features of your language, but give you plenty of flexibility to evolve the language from that starting point.</p>
+<h2 id="functional-programming">Functional Programming</h2>
+<p>This language follows OCAML closely. You can choose to use a Racket-like syntax instead. In general you can use whatever syntax you want externally. For instance you don’t have to call the <code>let</code> statements “let”, they can be “define” or whatever else.</p>
+<p>Basic expectations:</p>
+<ul>
+<li>Function closures should be primitive values, usable anywhere where a value is expected.</li>
+<li>There should be no mutation.</li>
+<li>It should contain tuples and lists as primitive structures, along with the necessary primitives to work with them.</li>
+<li>It should have let-in statements for creating new scopes.</li>
+<li>It should have top-level let statements.</li>
+<li>All functions should be automatically ready for recursion, i.e. you can call the function from within its body.</li>
+<li>The language should have type-checking. Function arguments should have their types specified when they are defined.</li>
+</ul>
+<p>Bonus items. You can choose to implement one or more. The more you do the better.</p>
+<ul>
+<li>Add a racket-<code>cond</code> feature (including an <code>else</code> as a synonym for true).</li>
+<li>Add the ability to define type aliases.</li>
+<li>Add pattern-matching.</li>
+<li>Make sure that function closures only store the variables they need from the current environment, instead of the whole environment.</li>
+<li>Implement type-inference and have function argument types inferred rather than specified.</li>
+<li>(harder) Ensure that the type-inference generalizes functions properly, i.e. that a function with type <code>'a -&gt; 'a</code> will be able to be used in the rest of the file with many differents types <code>'a</code>, and it would not commit itself to the first occurence. This item will make more sense only after you have implemented basic type-inference.</li>
+</ul>
+<h2 id="class-based-object-oriented-imperative">Class-based Object-Oriented Imperative</h2>
+<p>This language would be a bit close to Java, except for no type-checking.</p>
+<p>Basic expectations:</p>
+<ul>
+<li>Scope should be specified with some version of braces (in addition to function bodies).</li>
+<li>There should be a way to declare new variables.</li>
+<li>There should be an assignment operation that can change the value of variables (variable mutation).</li>
+<li>In order for mutation to work, you will need to use a “store” in addition to the environment.</li>
+<li>The main construct in your language would be a “class”.
+<ul>
+<li>A class contains a “constructor” that given some inputs returns a new object of that class.</li>
+<li>It also contains the object methods.</li>
+<li>There would be a way to call the constructor to create new “objects”. Objects need to hold a list of the initialized variables and also to know what class they belong to.</li>
+<li>Within an object method, there should be a keyword, <code>this</code> or <code>self</code> or something else, used to refer to the object itself. It needs to be part of the environment when we evaluate an object’s method call.</li>
+</ul></li>
+<li>Your language should support <code>while</code> and <code>for</code> loops.</li>
+<li>You will need to make a distinction between statements (assignment, for, while, if-then-else) and expressions.
+<ul>
+<li>Your program will be a series of function and class definitions. Function/Method definitions will be a series of statements.</li>
+<li>Expressions are expected at specific places.</li>
+<li>Functions and methods should use an explicit <code>return</code> like construct for returning a result. You will have to decide how your constructors would behave.</li>
+</ul></li>
+<li>Object variables should be only accessible from within an object’s methods. Outside entities can only call an object’s methods.</li>
+</ul>
+<p>Bonus items. You can choose to implement one or more. The more you do the better.</p>
+<ul>
+<li>Add support for inheritance. This may include some sort of <code>super</code> keyword to access the parent class. Subclasses should have access to the variables defined by the superclass.</li>
+<li>Allow class methods and class variables.</li>
+<li>Offer a separation of methods and/or object variables into private/public.</li>
+<li>Add a <code>switch/case</code> construct. Make sure to be clear about fall-through behavior. You may also include a <code>default</code> construct.</li>
+<li>(harder) Add some basic “garbage collection” mechanism: Based on the current environment it determines which parts of the “store” are no longer needed, and shrinks the store accordingly.</li>
+</ul>
+</body>
+</html>
