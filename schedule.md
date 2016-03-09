@@ -130,15 +130,15 @@ Day 2
   ~ **MIDTERM**  ([study guide](notes/midterm_study_guide.md))
 
 Day 3
-  ~ TBA
+  ~ [Introduction to Racket (cont)](notes/racket_intro.md)
 
 Day 4
-  ~ TBA
+  ~ Guest lecture
 
 ## Week 10 (03/14-03/18)
 
 Day 1
-  ~ TBA
+  ~ [Bindings and Mutation in Racket](notes/racket_bindings_mutation.md)
 
 Day 2
   ~ TBA

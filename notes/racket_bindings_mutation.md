@@ -87,3 +87,4 @@ b          ;  <-- how much is this?
 
 1. Write a function `keepAdding` that starts with an internal counter of `0`. Each time it is called it takes as argument a number, updates the counter by adding this number and returns the result.
 2. Write a function that takes some initial input, and returns a function `recall` that does the following: Each time it is called, with an argument, it returns the value that was used the last time it was called. For the first call we would return the initial input that was provided to the function that created `recall`.
+3. Write a function `stackup` that each time it is called with an argument it adds this argument to the list of values from previous calls, starting with an empty list. Each call to the function increases the list length by 1.
