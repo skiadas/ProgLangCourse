@@ -59,6 +59,7 @@ Basic expectations:
 - There should be a way to declare new variables.
 - There should be an assignment operation that can change the value of variables (variable mutation).
 - In order for mutation to work, you will need to use a "store" in addition to the environment.
+- Since variable mutation is present, you need to be very clear about the behavior you expect for the parameters that are passed to a function. Make sure that changing the value of those parameters in the function does not actually change the entry that was provided by the caller.
 - The main construct in your language would be a "class".
     - A class contains a "constructor" that given some inputs returns a new object of that class.
     - It also contains the object methods.
