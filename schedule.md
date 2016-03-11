@@ -133,15 +133,15 @@ Day 3
   ~ [Introduction to Racket (cont)](notes/racket_intro.md)
 
 Day 4
-  ~ Guest lecture
+  ~ [Bindings and Mutation in Racket](notes/racket_bindings_mutation.md)
 
 ## Week 10 (03/14-03/18)
 
 Day 1
-  ~ [Bindings and Mutation in Racket](notes/racket_bindings_mutation.md)
+  ~ TBA
 
 Day 2
-  ~ TBA
+  ~ Guest lecture
 
 Day 3
   ~ TBA
