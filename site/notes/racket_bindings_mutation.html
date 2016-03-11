@@ -45,7 +45,7 @@
 <pre class="racket"><code>(letrec ([y z]
          [z 3])
   y)</code></pre>
-<h2 id="mutation">Mutation</h2>
+<h2 id="variable-mutation">Variable Mutation</h2>
 <p>Racket actually supports what we named <em>variable mutation</em>. There is an operator that allows you to change the value of bindings:</p>
 <pre class="racket"><code>(define b 3)
 (define (f) b)
@@ -69,7 +69,33 @@ b
 (define b 2)
 (f b)      ;  &lt;-- how much is this?
 b          ;  &lt;-- how much is this?</code></pre>
+<h2 id="structure-mutation">Structure Mutation</h2>
+<p>Racket also offers various forms of Structure Mutation, one is <strong>mutable cons cells</strong>. These cons cells must be constructed with a call to <code>mcons</code> instead of <code>cons</code>, their parts can be accessed with calls to <code>mcar</code> and <code>mcdr</code>, and their contents can be changed with a call to <code>set-mcar!</code> or <code>set-mcdr!</code>. As an example, we’ll implement delayed evaluation as follows:</p>
+<ul>
+<li>We keep an unevaluated thunk in a mutable cons cell <code>(mcons #f th)</code>.</li>
+<li>When we are forced to evaluate the thunk the first time, we change the cell to <code>(mcons #t v)</code> where <code>v</code> is the value we get from evaluating the thunk.</li>
+</ul>
+<p>Here is for example code for a <code>delay</code> function and a <code>force</code> function:</p>
+<pre><code>(define (delay th)
+  (mcons #f th))
+
+(define (force cell)
+  (if (mcar cell)
+      (mcdr cell)
+      (let ([v ((mcdr cell))])
+        (begin (set-mcar! cell #t)
+               (set-mcdr! cell v)
+               v))))
+
+(define delayed-b
+  (delay (lambda ()
+           (begin (print &quot;Will only see this once!&quot;)
+                  5))))
+
+(force delayed-b)
+(force delayed-b)</code></pre>
 <h2 id="practice">Practice</h2>
+<p>All these can be done with either <code>mcons</code> cells or <code>set!</code>, but were originally designed to be done with <code>set!</code>.</p>
 <ol style="list-style-type: decimal">
 <li>Write a function <code>keepAdding</code> that starts with an internal counter of <code>0</code>. Each time it is called it takes as argument a number, updates the counter by adding this number and returns the result.</li>
 <li>Write a function that takes some initial input, and returns a function <code>recall</code> that does the following: Each time it is called, with an argument, it returns the value that was used the last time it was called. For the first call we would return the initial input that was provided to the function that created <code>recall</code>.</li>

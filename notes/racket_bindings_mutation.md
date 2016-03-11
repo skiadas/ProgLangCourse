@@ -49,7 +49,7 @@ It is really important to keep in mind that `letrec` allows expressions to refer
   y)
 ```
 
-## Mutation
+## Variable Mutation
 
 Racket actually supports what we named *variable mutation*. There is an operator that allows you to change the value of bindings:
 ```racket
@@ -83,7 +83,38 @@ Before we move on, consider the following and explain what goes on:
 b          ;  <-- how much is this?
 ```
 
+## Structure Mutation
+
+Racket also offers various forms of Structure Mutation, one is **mutable cons cells**. These cons cells must be constructed with a call to `mcons` instead of `cons`, their parts can be accessed with calls to `mcar` and `mcdr`, and their contents can be changed with a call to `set-mcar!` or `set-mcdr!`. As an example, we'll implement delayed evaluation as follows:
+
+- We keep an unevaluated thunk in a mutable cons cell `(mcons #f th)`.
+- When we are forced to evaluate the thunk the first time, we change the cell to `(mcons #t v)` where `v` is the value we get from evaluating the thunk.
+
+Here is for example code for a `delay` function and a `force` function:
+```
+(define (delay th)
+  (mcons #f th))
+
+(define (force cell)
+  (if (mcar cell)
+      (mcdr cell)
+      (let ([v ((mcdr cell))])
+        (begin (set-mcar! cell #t)
+               (set-mcdr! cell v)
+               v))))
+
+(define delayed-b
+  (delay (lambda ()
+           (begin (print "Will only see this once!")
+                  5))))
+
+(force delayed-b)
+(force delayed-b)
+```
+
 ## Practice
+
+All these can be done with either `mcons` cells or `set!`, but were originally designed to be done with `set!`.
 
 1. Write a function `keepAdding` that starts with an internal counter of `0`. Each time it is called it takes as argument a number, updates the counter by adding this number and returns the result.
 2. Write a function that takes some initial input, and returns a function `recall` that does the following: Each time it is called, with an argument, it returns the value that was used the last time it was called. For the first call we would return the initial input that was provided to the function that created `recall`.
