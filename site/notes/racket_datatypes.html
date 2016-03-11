@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+<link rel="stylesheet" href="http://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="dynamic-datatype-programming">Dynamic Datatype-Programming</h1>
+<p>OCAML’s ability to create new datatypes via type variants and products is extremely useful. It is also partly forced on us by the typing restrictions, as we can’t otherwise have a function that can take both integers and floats and strings etc. So in Racket we can have a function that does one thing if its input is a pair, another thing if the input is a number and so on. Racket offers us predicates like <code>pair?</code>, <code>number?</code> etc to be able to do that.</p>
+<p>We will see now how to create our own datatypes, in two ways.</p>
+<h2 id="dynamic-datatype-programming-via-tagged-lists">Dynamic Datatype-Programming via tagged lists</h2>
+<p>We can create our own predicates and “constructors”. The idea is simple, using “tagged lists”:</p>
+<ul>
+<li>We represent each “value” as a list.</li>
+<li>The first entry holds a symbol indicating the kind/type of value.</li>
+<li>The remaining entries hold various components of the value.</li>
+<li>We build a “constructor” function that creates the cons cell.</li>
+<li>We build a predicate that tests if the symbol in the first entry is the right one.</li>
+<li>We build accessors to get hold of the other entries.</li>
+</ul>
+<p>This is in fact not unlike how these kinds of data structures are actually implemented in memory.</p>
+<p>For example, suppose we wanted to have something equivalent to the expression datatype we’ve been working with, a very simplified form of which would be:</p>
+<pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> expr = <span class="dt">Num</span> <span class="kw">of</span> i
+          | <span class="dt">Add</span> <span class="kw">of</span> expr * expr
+          | <span class="dt">Mult</span> <span class="kw">of</span> expr * expr</code></pre>
+<p>Here is how that might look in Racket, with our plan to use lists to represent different datatypes:</p>
+<pre class="racket"><code>;; Constructors
+(define (Num i) (list &#39;Num i))
+(define (Add e1 e2) (list &#39;Add e1 e2))
+(define (Mult e1 e2) (list &#39;Mult e1 e2))
+;; Predicates
+(define (Num? e) (eq? (car e) &#39;Num))
+(define (Add? e) (eq? (car e) &#39;Add))
+(define (Mult? e) (eq? (car e) &#39;Mult))
+;; Accessors
+(define (Num-i e) (car (cdr e)))
+(define (Add-e1 e) (car (cdr e)))
+(define (Add-e2 e) (car (cdr (cdr e))))
+(define (Mult-e1 e) (car (cdr e)))
+(define (Mult-e2 e) (car (cdr (cdr e))))</code></pre>
+<p>With these definitions in mind, here’s how the evaluation of an expression might go:</p>
+<pre class="racket"><code>(define (eval-expr e)
+  (cond [(Num? e) (Num-i e)]
+        [(Add? e) (+ (eval-expr (Add-e1 e))
+                     (eval-expr (Add-e2 e)))]
+        [(Mult? e) (* (eval-expr (Mult-e1 e))
+                      (eval-expr (Mult-e2 e)))]
+        [else (error &quot;Unknown expression&quot;)]))
+
+(eval-expr (Num 4))
+(eval-expr (Add (Num 4)
+                (Mult (Num 3) (Num 5))))</code></pre>
+<p>As you can imagine, writing all the accessors above can be tedious. Racket in fact offers us an alternative, in the form of structs. You could also imagine some macro mechanism that automatically does the kind of work needed to create the above definitions. In fact that’s what structs more or less do for us, with some extra features added in.</p>
+<p>Before we move on though, let us discuss some of the problems with the previous approach:</p>
+<ul>
+<li>There are not many checks anywhere to make sure the input is right. For example, any list, produced anywhere, whose first entry is the symbol <code>'Num</code> can pass the <code>Num?</code> predicate.</li>
+<li>We don’t have any way to ensure that these lists have the right number of elements. Though we could in theory make our predicates a bit smarter.</li>
+<li>The lists are exposed as such. We don’t have a way to hide their nature from other parts of the program. For example any of our “structures” would pass the <code>list?</code> predicate.</li>
+<li><p>It’s not easy in general to test whether something is an arithmetic expression. We could create a test like so:</p>
+<pre class="racket"><code>(define (expr? e)
+  (or (Num? e)
+      (Add? e)
+      (Mult? e)))</code></pre>
+<p>But this already has too many false positives as we described above, and we will need to remember to update it every time we add a new expression case.</p></li>
+</ul>
+<p>We will see how structs remedy a lot of these “problems”.</p>
+<h2 id="dynamic-datatype-programming-via-structs">Dynamic Datatype-Programming via structs</h2>
+<p>The <code>struct</code> constructs for our example above would look as follows, where we switch to lowercase first letter (do not worry about the <code>#:transparent</code> flag right now, we may discuss it later):</p>
+<pre class="racket"><code>(struct num (i) #:transparent)
+(struct add (e1 e2) #:transparent)
+(struct mult (e1 e2) #:transparent)</code></pre>
+<p>These three lines alone essentially create all the functions we defined explicitly earlier:</p>
+<ul>
+<li>We can use <code>(num 3)</code> or <code>(add (num 3) (num 4))</code> and so on to create new “expressions”. It’s not perfect as it would allow us for instance to write <code>(add 2 3)</code>, i.e. it doesn’t enforce a “type” for the components. We may see a way around that when we discuss contracts.</li>
+<li>We have predicates <code>num?</code>, <code>add?</code> etc: <code>(num? (num 3))</code>.</li>
+<li>We have accessors: <code>(add-e1 (add (num 3) (num 4)))</code> gives us <code>(num 3)</code>.</li>
+<li>If we had added the flag <code>#:mutable</code> then we would also have been given <code>set!</code>-style functions for each component, if that is something we felt would be useful.</li>
+</ul>
+<p>The expression evaluator will look very similar to the one we wrote earlier. The main difference is that while before we could have used the fact that expression are actually lists to directly access their entries, with structs we are forced to use the accessor methods, which is a very good thing.</p>
+</body>
+</html>

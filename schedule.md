@@ -138,21 +138,21 @@ Day 4
 ## Week 10 (03/14-03/18)
 
 Day 1
-  ~ TBA
+  ~ [Macros](notes/racket_macros.md)
 
 Day 2
   ~ Guest lecture
 
 Day 3
-  ~ TBA
+  ~ [Dynamic Datatype-Programming via pairs](notes/racket_datatypes.md)
 
 Day 4
-  ~ TBA
+  ~ [Dynamic Datatype-Programming via structs](notes/racket_datatypes.md)
 
 ## Week 11 (03/21-03/25)
 
 Day 1
-  ~ TBA
+  ~ Getting mutation into the interpreter
 
 Day 2
   ~ TBA
