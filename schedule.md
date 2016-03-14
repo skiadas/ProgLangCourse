@@ -152,7 +152,7 @@ Day 4
 ## Week 11 (03/21-03/25)
 
 Day 1
-  ~ Getting mutation into the interpreter
+  ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
 
 Day 2
   ~ TBA

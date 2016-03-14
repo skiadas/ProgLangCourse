@@ -75,7 +75,7 @@ First, here is an example that allows us to write the words `then` and `else` as
     [(my-if e1 then e2 else e3)
      (if e1 e2 e3)]))
 ```
-We define a macro with `define-syntax`. The first term after it is the name of the macro. We then have a `syntax-rules` call that specifies a series of "keywords" that appear in the macro that should not be treated as variables, in this case those are `then` and `else`. The remaining arguments to `syntax-rules is a series of bracketed pairs of expressions, where the first part of the pair is the form of `my-if` and the second is what it should be replaced by. We can create a single macro that can accept multiple forms of argument and behaves differently for each one.
+We define a macro with `define-syntax`. The first term after it is the name of the macro. We then have a `syntax-rules` call that specifies a series of "keywords" that appear in the macro that should not be treated as variables, in this case those are `then` and `else`. The remaining arguments to `syntax-rules` is a series of bracketed pairs of expressions, where the first part of the pair is the form of `my-if` and the second is what it should be replaced by. We can create a single macro that can accept multiple forms of argument and behaves differently for each one.
 
 A key thing in the above is that the expressions `e1`, `e2` and `e3` are not being evaluated when `my-if` is encountered; the conversion to `if` happens without the evaluation of the expressions, which is good because we wouldn't want `e2` and `e3` to always be evaluated. In this way macros are very different from functions. For example here is a macro for "or":
 ```racket
