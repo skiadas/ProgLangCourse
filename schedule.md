@@ -115,7 +115,7 @@ Day 3
 Day 4
   ~ [Building an Interpreter](notes/interpreter.md)
 
-    [Assignment 8](assignments/hw8.md) due Friday, March 14th.
+    [Assignment 8](assignments/hw8.md) due Monday, March 14th.
 
 ## Week  8 (02/29-03/04)
 
@@ -140,19 +140,23 @@ Day 4
 Day 1
   ~ [Macros](notes/racket_macros.md)
 
+    [Dynamic Datatype-Programming via pairs](notes/racket_datatypes.md)
+
+    [Assignment 9](assignments/hw9.md) due Friday, March 18st.
+
 Day 2
   ~ Guest lecture
 
 Day 3
-  ~ [Dynamic Datatype-Programming via pairs](notes/racket_datatypes.md)
+  ~ [Dynamic Datatype-Programming via structs](notes/racket_datatypes.md)
 
 Day 4
-  ~ [Dynamic Datatype-Programming via structs](notes/racket_datatypes.md)
+  ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
 
 ## Week 11 (03/21-03/25)
 
 Day 1
-  ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
+  ~ [Mutation in the Interpreter: The need for a store, cont](notes/interp_mutation.md)
 
 Day 2
   ~ TBA
