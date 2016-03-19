@@ -74,6 +74,7 @@ We therefore split the storage of the information needed by the interpreter in t
 (struct arith (op e1 e2) #:transparent)
 (struct fun (fname arg body) #:transparent)
 (struct call (e1 e2) #:transparent)
+(struct letC (s e1 e2) #:transparent)
 (struct ref (e) #:transparent)
 (struct assign (e1 e2) #:transparent)
 (struct deref (e) #:transparent)
@@ -98,7 +99,7 @@ The interpreter now takes as input an environment and a store and an expression,
 We start with the `var` case. It must use `lookup` to get the location where the value is stored, then use `fetch` to grab the value stored in that location.
 ```racket
     [(var? e)
-     (res (fetch (lookup env) sto)
+     (res (fetch (lookup env (var-s e)) sto)
           sto)]
 ```
 Arithmetic operations must be careful about the order of evaluation: The first expression must be evaluated, returning a value and an updated store. Then *this updated store* must be used when evaluating the second expression. Finally, we must return the store returned by that second expression.
@@ -151,3 +152,37 @@ Finally, we have to implement `assign`. Since we don't have "unit"s in our langu
                                  (res-sto r2)))
            (error "assigning to non-reference")))]
 ```
+
+Next, we have to implement function definitions and function calls, as well as `let` statement. We start with the `let`. `letC` needs to bind the symbol to a location that holds a value. So it needs to create a new location and update both the environment and the store before evaluating the second expression. So this is how that will look (pay attention to the updated store):
+```racket
+    [(letC? e)
+     (let* ([loc (new-loc)]
+            [r1 (interp env sto (letC-e1 e))])
+       (interp (bind (letC-s e) loc env)
+               (store loc (res-v r1) (res-sto sto))
+               (letC-e2 e)))]
+```
+Function definition is straightforward:
+```racket
+    [(func? e)
+     (res (closV e env)
+          sto)]
+```
+Function calls are trickier but similar to `letC`. We need to: Evaluate the function location to a value, evaluate the parameter location to a value, check that the function value is indeed a closure, create a new location to hold the binding of the parameter, get the environment out of the closure and extend it by this new location, extend the appropriate scope with this new location related to the parameter's value, then evaluate the body in the appropriate environment and scope. Phew. Ok here's how that looks (ignoring for the sake of simplicity the question of the recursive name for the function):
+```racket
+    [(call? e)
+     (let* ([loc (new-loc)]
+            [rf (interp env sto (call-e1 e))]
+            [rv (interp env (res-sto rf) (call-e2 e))]
+            [cl (res-v rf)])
+       (if (closV? cl)
+           (interp (bind (func-arg (closV-f cl))
+                         loc
+                         (closV-env cl))
+                   (store loc
+                          (res-v rv)
+                          (res-sto rf))
+                   (func-body (closV-f cl)))))]
+```
+
+A very interesting question arises if the value to be passed is already a `refV`, with its own location. Should we reuse that location, instead of creating our own new location? What does this mean about the semantics of the function call?

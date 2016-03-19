@@ -156,24 +156,24 @@ Day 4
 ## Week 11 (03/21-03/25)
 
 Day 1
-  ~ [Mutation in the Interpreter: The need for a store, cont](notes/interp_mutation.md)
+  ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
 
 Day 2
-  ~ TBA
+  ~ [Static Type-Checking vs Dynamic checking](notes/static_vs_dynamic.md)
 
 Day 3
-  ~ TBA
+  ~ Interpreting objects and classes
 
 Day 4
-  ~ TBA
+  ~ Type-checking in the interpreter
 
 ## Week 12 (03/28-04/01)
 
 Day 1
-  ~ TBA
+  ~ Continuations and their uses
 
 Day 2
-  ~ TBA
+  ~ Continuation-passing style
 
 Day 3
   ~ TBA
