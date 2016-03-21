@@ -142,7 +142,7 @@ Day 1
 
     [Dynamic Datatype-Programming via pairs](notes/racket_datatypes.md)
 
-    [Assignment 9](assignments/hw9.md) due Friday, March 18st.
+    [Assignment 9](assignments/hw9.md) due Monday, March 21st.
 
 Day 2
   ~ Guest lecture
@@ -157,6 +157,8 @@ Day 4
 
 Day 1
   ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
+
+    [Assignment 10](assignments/hw10.md) due Monday, March 28th.
 
 Day 2
   ~ [Static Type-Checking vs Dynamic checking](notes/static_vs_dynamic.md)
