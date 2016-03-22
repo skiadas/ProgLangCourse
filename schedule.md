@@ -158,27 +158,27 @@ Day 4
 Day 1
   ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
 
-    [Assignment 10](assignments/hw10.md) due Monday, March 28th.
+    [Assignment 10](assignments/hw10.md) due Friday, April 1st.
 
 Day 2
-  ~ [Static Type-Checking vs Dynamic checking](notes/static_vs_dynamic.md)
+  ~ [Mutation in the Interpreter: The need for a store](notes/interp_mutation.md)
 
 Day 3
-  ~ Interpreting objects and classes
+  ~ [Static Type-Checking vs Dynamic checking](notes/static_vs_dynamic.md)
 
 Day 4
-  ~ Type-checking in the interpreter
+  ~ Interpreting objects and classes
 
 ## Week 12 (03/28-04/01)
 
 Day 1
-  ~ Continuations and their uses
+  ~ Type-checking in the interpreter
 
 Day 2
-  ~ Continuation-passing style
+  ~ Continuations and their uses
 
 Day 3
-  ~ TBA
+  ~ Continuation-passing style
 
 Day 4
   ~ TBA

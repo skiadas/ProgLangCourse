@@ -6,7 +6,7 @@ This assignment serves as an introduction to basic Racket features. You will fin
 
 You are not allowed to use any of the mutation features in Racket. But you may otherwise use Racket features we may not have talked about. There are really few instances where this should be needed, though. For the most part we have covered all that you will need for this assignment.
 
-Correctness of the solutions, including whether the code loads, will count for 15 points. Your code MUST load with no errors and have the correct types. You should make sure that the compile steps described in the README in the assignment file work out without problems.
+Correctness of the solutions, including whether the code loads, will count for 15 points. Your code MUST load with no errors and have the correct types.
 
 Style-wise, pay particular attention to the names you use for your variables, and to the appropriate vertical-aligning of related items.
 
