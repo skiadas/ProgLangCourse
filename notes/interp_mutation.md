@@ -99,7 +99,7 @@ The interpreter now takes as input an environment and a store and an expression,
 We start with the `var` case. It must use `lookup` to get the location where the value is stored, then use `fetch` to grab the value stored in that location.
 ```racket
     [(var? e)
-     (res (fetch (lookup env (var-s e)) sto)
+     (res (fetch (lookup (var-s e) env) sto)
           sto)]
 ```
 Arithmetic operations must be careful about the order of evaluation: The first expression must be evaluated, returning a value and an updated store. Then *this updated store* must be used when evaluating the second expression. Finally, we must return the store returned by that second expression.
@@ -109,12 +109,12 @@ Arithmetic operations must be careful about the order of evaluation: The first e
             [r2 (interp env (res-sto r1) (arith-e2 e))])
        (if (and (numV? (res-v r1))
                 (numV? (res-v r2)))
-           (res (numV (arith-op (num-n (res-v r1))
-                                (num-n (res-v r2))))
+           (res (numV ((arith-op e) (numV-n (res-v r1))
+                                    (numV-n (res-v r2))))
                 (res-sto r2))
            (error "interp: adding non-numbers")))]
 ```
-Notice now much more complicated each case becomes out of the need to properly maintain the time-effect of store-passing style.
+Notice how much more complicated each case becomes out of the need to properly maintain the time-effect of store-passing style.
 
 We'll now look at the cases that are related to mutation. `seq` is similar to arith: `e1` is interpreter only so we can get an updated store.
 ```racket
@@ -159,12 +159,12 @@ Next, we have to implement function definitions and function calls, as well as `
      (let* ([loc (new-loc)]
             [r1 (interp env sto (letC-e1 e))])
        (interp (bind (letC-s e) loc env)
-               (store loc (res-v r1) (res-sto sto))
+               (store loc (res-v r1) (res-sto r1))
                (letC-e2 e)))]
 ```
 Function definition is straightforward:
 ```racket
-    [(func? e)
+    [(fun? e)
      (res (closV e env)
           sto)]
 ```
@@ -176,13 +176,14 @@ Function calls are trickier but similar to `letC`. We need to: Evaluate the func
             [rv (interp env (res-sto rf) (call-e2 e))]
             [cl (res-v rf)])
        (if (closV? cl)
-           (interp (bind (func-arg (closV-f cl))
+           (interp (bind (fun-arg (closV-f cl))
                          loc
                          (closV-env cl))
                    (store loc
                           (res-v rv)
-                          (res-sto rf))
-                   (func-body (closV-f cl)))))]
+                          (res-sto rv))
+                   (fun-body (closV-f cl)))
+           (error "Trying to call non-function")))]
 ```
 
 A very interesting question arises if the value to be passed is already a `refV`, with its own location. Should we reuse that location, instead of creating our own new location? What does this mean about the semantics of the function call?

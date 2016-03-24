@@ -52,7 +52,7 @@
       (res null sto)
       (let* ([r (interp o env sto (car lst))]
              [r-rest (interp-list o env (res-sto r) (cdr lst))])
-        (res (cons (cons (car lst) (res-v r))
+        (res (cons (res-v r)
                    (res-v r-rest))
              (res-sto r-rest)))))</code></pre>
 <h2 id="classes">Classes</h2>
@@ -67,22 +67,26 @@
 <li>As each of these is evaluated, we must maintain the store and propagate it.</li>
 </ul>
 <pre class="racket"><code>;; (classC super init fnames mnames methods)
-[(classC? e)
- (let* ([r-super (interp o env sto (classC-super e))]
-        [super (res-v r-super)]
-        [r-init (interp o env (res-sto sto) (classC-init e))]
-        [init (res-v r-init)]
-        [r-methods (interp-list o env (res-sto r-init)) (classC-methods e)]
-        [methods (res-v r-methods)])
-   (cond [(not (andmap symbol? (classC-fnames)))
-          (error &quot;field names must be symbols&quot;)]
-         [(not (andmap symbol? (classC-mnames)))
-          (error &quot;method names must be symbols&quot;)]
-         [(not (closV? init))
-          (error &quot;initializer must be a function&quot;)]
-         [(not (andmap closV? methods))
-          (error &quot;class methods must be functions&quot;)]
-         [else (classV super init fnames mnames methods)]))]</code></pre>
+    [(classC? e)
+     (let* ([r-super (interp o env sto (classC-super e))]
+            [super (res-v r-super)]
+            [r-init (interp o env (res-sto r-super) (classC-init e))]
+            [init (res-v r-init)]
+            [r-methods (interp-list o env (res-sto r-init) (classC-methods e))]
+            [methods (res-v r-methods)]
+            [fnames (classC-fnames e)]
+            [mnames (classC-mnames e)])
+       (cond [(not (andmap symbol? fnames))
+              (error &quot;field names must be symbols&quot;)]
+             [(not (andmap symbol? mnames))
+              (error &quot;method names must be symbols&quot;)]
+             [(not (closV? init))
+              (error &quot;initializer must be a function&quot;)]
+             [(not (andmap closV? methods))
+              (error &quot;class methods must be functions&quot;)]
+             [else
+              (res (classV super init fnames mnames methods)
+                   (res-sto r-methods))]))]</code></pre>
 <h2 id="new-objects">New objects</h2>
 <p>In order to implement <code>new</code>, we must do the following:</p>
 <ul>
@@ -132,17 +136,18 @@
 <li>Finally we return the object.</li>
 </ul>
 <pre class="racket"><code>;; (newC class)
-[(newC? e)
- (let* ([r-cls (interp o env sto (newC-class e))]
-        [cls (res-v r-cls)])
-   (if (classV? cls)
-       (let* ([fields (get-symbols cls)]
-              [locs (map (lambda (t) (new-loc)) fields)]
-              [obj (objV cls tags locs)]
-              [rinit (call-inits obj
-                                 (res-sto r-cls)
-                                 (get-inits cls))])
-          (res obj (res-sto rinit)))))]</code></pre>
+    [(newC? e)
+     (let* ([r-cls (interp o env sto (newC-class e))]
+            [cls (res-v r-cls)])
+       (if (classV? cls)
+           (let* ([fields (get-symbols cls)]
+                  [locs (map (lambda (t) (new-loc)) fields)]
+                  [obj (objV cls fields locs)]
+                  [rinit (call-inits obj
+                                     (res-sto r-cls)
+                                     (get-inits cls))])
+             (res obj (res-sto rinit)))
+           (error &quot;new needs a class&quot;)))]</code></pre>
 <h2 id="method-dispatch">Method Dispatch</h2>
 <p>Next up we need to implement method dispatch. We need to:</p>
 <ul>
@@ -152,22 +157,22 @@
 <li>Perform the call with the correct object/enviroment.</li>
 </ul>
 <pre class="racket"><code>;; (disp obj s arg)
-[(disp? e)
- (let* ([robj (interp o env sto (disp-obj e))]
+    [(disp? e)
+     (let* ([robj (interp o env sto (disp-obj e))]
         [obj (res-v robj)]
         [rv (interp o env (res-sto robj) (disp-arg e))]
         [v (res-v rv)])
-   (if (objV? obj)
-       (call-method (find-method s obj) obj (res-sto rv) v)
-       (error &quot;cannot dispatch on non-object&quot;)))]</code></pre>
+       (if (objV? obj)
+           (call-method (find-method (disp-s e) obj) obj (res-sto rv) v)
+           (error &quot;cannot dispatch on non-object&quot;)))]</code></pre>
 <p>We need to implement <code>call-method</code> and <code>find-method</code>. We start with <code>call-method</code>. It is given a function value, an object to use as self, a store, and an argument value. It does not need an environment as it will use the function closure’s environment. It <em>does</em> need to create a new memory location to store the argument.</p>
 <p>We would normally check that the method we are given is actually a closure. But we have ensured that when we created the classes. So we would never dispatch on a non-method.</p>
 <pre class="racket"><code>(define (call-method fv obj sto argv)
-  (let ([f (closV-fun fv)]
+  (let ([f (closV-f fv)]
         [loc (new-loc)])
     (interp obj
             (bind (fun-arg f) loc (closV-env fv))
-            (store loc fv sto)
+            (store loc argv sto)
             (fun-body f))))</code></pre>
 <p>Now <code>find-method</code>, the main method that implements the dynamic dispatch. It is given a symbol and an object, and it must locate the appropriate method to call by going up the chain. It uses a helper method, that takes a list of names and methods and if it finds the symbol it returns the corresponding method.</p>
 <pre class="racket"><code>(define (search-in-list s mnames methods)
@@ -208,7 +213,9 @@
  (let* ([robj (interp o env sto (getC-obj e))]
         [obj (res-v robj)])
    (if (objV? obj)
-       (fetch (get-field-loc s obj) (res-sto robj))
+           (res (fetch (get-field-loc (getC-s e) obj)
+                       (res-sto robj))
+                (res-sto robj))
        (error &quot;Cannot get field of non-object&quot;)))]</code></pre>
 <p>Similarly for <code>setC</code>, with extra steps for evaluating the value.</p>
 <pre class="racket"><code>;; (setC obj s e)
@@ -218,9 +225,56 @@
         [rv (interp o env (res-sto robj) (setC-e e))]
         [v (res-v rv)])
    (if (objV? obj)
-       (let ([loc (get-field-loc s obj)])
-         (res v (store loc v (res-v rv))))
+       (let ([loc (get-field-loc (setC-s e) obj)])
+         (res v (store loc v (res-sto rv))))
        (error &quot;Cannot set field of non-object&quot;)))]</code></pre>
 <p>This essentially completes our basic implementation of classes and objects.</p>
+<p>Here is an example of a program written in this language. It creates a point class with x and y fields, then a subclass for 3-dimensional points with an extra z field. Also a “length squared” method for computing the squared distance from the origin.</p>
+<pre class="racket"><code>(define prog1
+  (letC &#39;Point
+        (classC
+         (voidC)
+         (fun #f #f
+              (seq (setC (self) &#39;x (num 0))
+                   (setC (self) &#39;y (num 0))))
+         (list &#39;x &#39;y)
+         (list &#39;getX &#39;getY &#39;setX &#39;setY &#39;lensq)
+         (list (fun #f #f (getC (self) &#39;x))
+               (fun #f #f (getC (self) &#39;y))
+               (fun #f &#39;newx (setC (self) &#39;x (var &#39;newx)))
+               (fun #f &#39;newy (setC (self) &#39;y (var &#39;newy)))
+               (fun #f #f
+                    (arith +
+                           (arith *
+                                  (disp (self) &#39;getX (voidC))
+                                  (disp (self) &#39;getX (voidC)))
+                           (arith *
+                                  (disp (self) &#39;getY (voidC))
+                                  (disp (self) &#39;getY (voidC)))))))
+        (letC &#39;Point3
+              (classC
+               (var &#39;Point)
+               (fun #f #f
+                    (setC (self) &#39;z (num 0)))
+               (list &#39;z)
+               (list &#39;getZ &#39;setZ &#39;lensq)
+               (list (fun #f #f (getC (self) &#39;z))
+                     (fun #f &#39;newz (setC (self) &#39;z (var &#39;newz)))
+                     (fun #f #f
+                          (arith +
+                                 (arith +
+                                        (arith *
+                                               (disp (self) &#39;getX (voidC))
+                                               (disp (self) &#39;getX (voidC)))
+                                        (arith *
+                                               (disp (self) &#39;getY (voidC))
+                                               (disp (self) &#39;getY (voidC))))
+                                 (arith *
+                                        (disp (self) &#39;getZ (voidC))
+                                        (disp (self) &#39;getZ (voidC)))))))
+              (letC &#39;p (newC (var &#39;Point3))
+                    (seq (disp (var &#39;p) &#39;setX (num 2))
+                         (seq (disp (var &#39;p) &#39;setZ (num 4))
+                              (disp (var &#39;p) &#39;lensq (voidC))))))))</code></pre>
 </body>
 </html>

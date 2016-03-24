@@ -96,7 +96,7 @@
 <p>The interpreter now takes as input an environment and a store and an expression, and returns a pair of a value and an updated store. Some cases don’t really change the store, they just propagate the provided store. Others need to change it.</p>
 <p>We start with the <code>var</code> case. It must use <code>lookup</code> to get the location where the value is stored, then use <code>fetch</code> to grab the value stored in that location.</p>
 <pre class="racket"><code>    [(var? e)
-     (res (fetch (lookup env (var-s e)) sto)
+     (res (fetch (lookup (var-s e) env) sto)
           sto)]</code></pre>
 <p>Arithmetic operations must be careful about the order of evaluation: The first expression must be evaluated, returning a value and an updated store. Then <em>this updated store</em> must be used when evaluating the second expression. Finally, we must return the store returned by that second expression.</p>
 <pre class="racket"><code>    [(arith? e)
@@ -104,11 +104,11 @@
             [r2 (interp env (res-sto r1) (arith-e2 e))])
        (if (and (numV? (res-v r1))
                 (numV? (res-v r2)))
-           (res (numV (arith-op (num-n (res-v r1))
-                                (num-n (res-v r2))))
+           (res (numV ((arith-op e) (numV-n (res-v r1))
+                                    (numV-n (res-v r2))))
                 (res-sto r2))
            (error &quot;interp: adding non-numbers&quot;)))]</code></pre>
-<p>Notice now much more complicated each case becomes out of the need to properly maintain the time-effect of store-passing style.</p>
+<p>Notice how much more complicated each case becomes out of the need to properly maintain the time-effect of store-passing style.</p>
 <p>We’ll now look at the cases that are related to mutation. <code>seq</code> is similar to arith: <code>e1</code> is interpreter only so we can get an updated store.</p>
 <pre class="racket"><code>    [(seq? e)
      (let ([r1 (interp env sto (seq-e1 e))])
@@ -142,10 +142,10 @@
      (let* ([loc (new-loc)]
             [r1 (interp env sto (letC-e1 e))])
        (interp (bind (letC-s e) loc env)
-               (store loc (res-v r1) (res-sto sto))
+               (store loc (res-v r1) (res-sto r1))
                (letC-e2 e)))]</code></pre>
 <p>Function definition is straightforward:</p>
-<pre class="racket"><code>    [(func? e)
+<pre class="racket"><code>    [(fun? e)
      (res (closV e env)
           sto)]</code></pre>
 <p>Function calls are trickier but similar to <code>letC</code>. We need to: Evaluate the function location to a value, evaluate the parameter location to a value, check that the function value is indeed a closure, create a new location to hold the binding of the parameter, get the environment out of the closure and extend it by this new location, extend the appropriate scope with this new location related to the parameter’s value, then evaluate the body in the appropriate environment and scope. Phew. Ok here’s how that looks (ignoring for the sake of simplicity the question of the recursive name for the function):</p>
@@ -155,13 +155,14 @@
             [rv (interp env (res-sto rf) (call-e2 e))]
             [cl (res-v rf)])
        (if (closV? cl)
-           (interp (bind (func-arg (closV-f cl))
+           (interp (bind (fun-arg (closV-f cl))
                          loc
                          (closV-env cl))
                    (store loc
                           (res-v rv)
-                          (res-sto rf))
-                   (func-body (closV-f cl)))))]</code></pre>
+                          (res-sto rv))
+                   (fun-body (closV-f cl)))
+           (error &quot;Trying to call non-function&quot;)))]</code></pre>
 <p>A very interesting question arises if the value to be passed is already a <code>refV</code>, with its own location. Should we reuse that location, instead of creating our own new location? What does this mean about the semantics of the function call?</p>
 </body>
 </html>
