@@ -167,7 +167,7 @@ Day 3
   ~ [Static Type-Checking vs Dynamic checking](notes/static_vs_dynamic.md)
 
 Day 4
-  ~ Interpreting objects and classes
+  ~ [Interpreting objects and classes](notes/interpret_oop.md)
 
 ## Week 12 (03/28-04/01)
 
