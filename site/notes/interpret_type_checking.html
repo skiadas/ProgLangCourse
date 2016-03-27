@@ -87,7 +87,7 @@
 <pre class="racket"><code>    [(pairC? e)
      (pairT (tc env (pairC-e1 e))
             (tc env (pairC-e2 e)))]</code></pre>
-<p>The pair accessors <code>fst</code> and <code>snd</code> are more interesting. They evaluate their expression, and it must be of pair type. They then read off the type from the pair.</p>
+<p>The pair accessors <code>car</code> and <code>cdr</code> are more interesting. They evaluate their expression, and it must be of pair type. They then read off the type from the pair.</p>
 <pre class="racket"><code>    [(carC? e)
      (let ([t (tc env (carC-e e))])
        (if (pairT? t)

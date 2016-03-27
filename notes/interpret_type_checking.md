@@ -96,7 +96,7 @@ Next we have pairs: They simply form a new type out of their components:
             (tc env (pairC-e2 e)))]
 ```
 
-The pair accessors `fst` and `snd` are more interesting. They evaluate their expression, and it must be of pair type. They then read off the type from the pair.
+The pair accessors `car` and `cdr` are more interesting. They evaluate their expression, and it must be of pair type. They then read off the type from the pair.
 ```racket
     [(carC? e)
      (let ([t (tc env (carC-e e))])
