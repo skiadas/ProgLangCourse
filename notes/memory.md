@@ -140,6 +140,8 @@ Generational garbage collection algorithms are based on what is known as the *ge
 
 > The most recently created objects are those most likely to become unreachable. Objects that have survived some GC cycles are likely to remain reachable.
 
+This is especially the case for functional programming languages, where the heavy use of higher-order functions like map and filter results in numerous ephemeral results.
+
 This suggests a garbage collection technique that is similar to the copying algorithms, but further divides the objects in 2 or more "generations".
 
 - The 1st generation contains the youngest objects. It has two parts, active and inactive, and performs copying when needed. This is the part of the memory that undergoes GC most frequently.
