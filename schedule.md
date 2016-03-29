@@ -178,7 +178,7 @@ Day 2
   ~ [Type-checking in the interpreter](notes/interpret_type_checking.md)
 
 Day 3
-  ~ Memory Management and Garbage Collection
+  ~ [Memory Management and Garbage Collection](notes/memory.md)
 
 Day 4
   ~ Implementing Type Inference
