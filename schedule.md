@@ -192,7 +192,7 @@ Day 2
   ~ [Control Structures](notes/control.md)
 
 Day 3
-  ~ Continuation-passing style
+  ~ [Continuation-passing style](notes/control.md)
 
 Day 4
   ~ Implementing Type Inference

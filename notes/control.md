@@ -1,4 +1,4 @@
-# Control
+# Control Structures
 
 In this section we will discuss a number of advanced features that have to do with controlling the flow of execution. We will start by discussing these features, then talk about possible implementations.
 
