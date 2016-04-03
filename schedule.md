@@ -175,27 +175,27 @@ Day 1
   ~ [Interpreting objects and classes (cont)](notes/interpret_oop.md)
 
 Day 2
-  ~ [Type-checking in the interpreter](notes/interpret_type_checking.md)
+  ~ [Interpreting objects and classes (cont)](notes/interpret_oop.md)
 
 Day 3
-  ~ [Memory Management and Garbage Collection](notes/memory.md)
+  ~ [Type-checking in the interpreter](notes/interpret_type_checking.md)
 
 Day 4
-  ~ Implementing Type Inference
+  ~ [Type-checking in the interpreter](notes/interpret_type_checking.md)
 
 ## Week 13 (04/04-04/08)
 
 Day 1
-  ~ Continuations and their uses
+  ~ [Memory Management and Garbage Collection](notes/memory.md)
 
 Day 2
-  ~ Continuation-passing style
+  ~ [Control Structures](notes/control.md)
 
 Day 3
-  ~ TBA
+  ~ Continuation-passing style
 
 Day 4
-  ~ TBA
+  ~ Implementing Type Inference
 
 
 ## Week 14 (04/11-04/15)
