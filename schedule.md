@@ -195,13 +195,13 @@ Day 3
   ~ [Continuation-passing style](notes/control.md)
 
 Day 4
-  ~ Implementing Type Inference
+  ~ [Implementing Type Inference](notes/interpret_inference.md)
 
 
 ## Week 14 (04/11-04/15)
 
 Day 1
-  ~ TBA
+  ~ [Implementing Parametric Types](notes/interpret_inference.md)
 
 Day 2
   ~ TBA
