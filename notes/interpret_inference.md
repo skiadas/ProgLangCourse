@@ -138,6 +138,7 @@ Calls are a bit like `carC`. They expect the first argument to be a function typ
                       (funT (new-type) (new-type)))])
        (t*c (funT-t2 ty-f)
             (list* (cons (funT-t1 ty-f) (t*c-t r2))
+                   (cons ty-f (t*c-t r1))
                    (append (t*c-c r1) (t*c-c r2)))))]
 ```
 Lastly, our function definitions. If they have provided us with a type for the argument, we must use that, otherwise create a new type variable. Same with the return type (`ty-body`).
@@ -196,6 +197,7 @@ Let us start building this function:
              [t2 (cdr nxt)]
              [rst (cdr constrs)])
         (cond
+          [(equal? t1 t2) (unify rst)]
           [(and (boolT? t1) (boolT? t2))
            (unify rst)]
           [(and (numT? t1) (numT? t2))
@@ -322,7 +324,124 @@ where the `subst-type` function is a function that we need to write, which takes
 
 ## Polymorphic Types
 
-WORK IN PROGRESS
+All of the above will work great for many cases. But there are instances where the types cannot be precisely determined. Consider for example the following function, that given an input returns a pair having that input in both parts:
+```racket
+(define f
+  (funC #f 'x #f
+        (pairC (varC 'x) (varC 'x))
+        #f))
+```
+Then the constraint generation would give us:
+```racket
+;; return type: (funT (varT 1) (varT 2))
+(list
+  (cons (varT 2)
+        (pairT (varT 1) (varT 1))))
+```
+and the unification part won't really add much to that. So we end up with a function type: `(funT (varT 1) (pairT (varT 1) (varT 1)))`. Which makes sense. There's absolutely no constraints on what kind of value we can feed the function. This is the classical case where in OCAML we used a polymorphic type. In effect we keep the type a variable, until we actually call the function. There is a problem however. Imagine the following, which for simplicity we write in OCAML:
+```ocaml
+let f = fun x -> (x, x)
+in (f 2, f true)
+```
+This should produce the value `((2, 2), (true, true))`. In our system it will give an error. This is how the expression might look like in our system:
+```racket
+(define ex3
+  (letC 'f f
+    (pairC (callC (varC 'f) (numC 2))
+           (callC (varC 'f) (boolC #t)))))
+```
+We will get a "type do not match" error. This is because each time we end up using the function, we get a constraint binding that variable type to the type of the passed value. If we call the function with different types of values, they will produce conflicting constraints on the variable.
 
-Polymorphic types work as follows: Let us say we have the type `'a --> 'a` where `'a` is to be a polymorphic type. To begin with this will look like `(funT (varT 5) (varT 5))`. To indicate that this variable type `varT` is to be polymorphic, we create a "polyT" type that has with it the type `varT 5` as a first argument and the whole function type as a second argument. So it would look like: `(polyT (varT 5) (funT (varT 5) (varT 5)))`, which basically says "treat `varT 5` as polymorphic when you consider that function type". When we want to use a polymorphic type, we must "instantiate it", meaning that we must create a new fresh variable and replace all occurences of the polymorphic type, `varT 5` in that example, to this fresh variable.
-- To go with this,
+A simple solution to this is as follows: Each time we use the function, we create a fresh variable to use, we essentially instantiate the variable type. The problem is that this may cause us to lose constraints that might have been in place in the function. We must not let future constraints determine the type of a function that was defined earlier.
+
+Therefore at every function definition we need to:
+
+- Unify the constraints so far
+- Determine if we have any "free" variable types
+- Somehow indicate that these are indeed free variable types
+
+And when we do a function call, we must create a new variable type and "instantiate" our function with this new variable type. This won't actually happen on the function call, but instead during constraint unification.
+
+In order to achieve this we create a new "polymorphic" type. It looks like this: `(polyT t1 t2)` where `t1` is meant to be a variable type, the parameter, and `t2` is the type that is supposed to depend on that variable. For example the polymorphic type `'a -> 'a` may be thought of as `(polyT (varT 1) (funT (varT 1) (varT 1)))`. We can also nest these polymorphic types. For instance `'a -> 'b` might be thought of as `(polyT (varT 1) (polyT (varT 2) (funT (varT 1) (varT 2))))`.
+
+We need to first of all change our `funC` constraint generation:
+```racket
+    [(funC? e)
+     (let* ([targ (or (funC-ty-arg e) (new-type))]
+            [tbody (or (funC-ty-body e) (new-type))]
+            [env1 (bind (funC-arg e) targ env)]
+            [env2 (if (funC-fname e)
+                      (bind (funC-fname e) (funT targ tbody) env1)
+                      env1)]
+            [r (gen-con env2 (funC-body e))]
+            ;; New stuff here:
+            [subs (unify (list* (cons tbody (t*c-t r))
+                                (t*c-c r)))]
+            [targ2 (subst-type targ subs)]
+            [tbody2 (subst-type tbody subs)])
+       (t*c (generalize (funT targ2 tbody2))
+            subs))]
+```
+Here `generalize` is a function that takes as input a type, finds all the distinct variable types in it, and "generalizes" them via polymorphic types.
+```racket
+(define (generalize type)
+  (foldr polyT type (uniq (get-vars type))))
+
+(define (get-vars type)
+  (cond [(varT? type) (list type)]
+        [(pairT? type) (append (get-vars (pairT-t1 type))
+                               (get-vars (pairT-t2 type)))]
+        [(funT? type) (append (get-vars (funT-t1 type))
+                              (get-vars (funT-t2 type)))]
+        ;; Poly should not occur when we call this function
+        ;; Other cases are atomic
+        [else null]))
+
+(define (uniq vars)
+  (define (aux sofar vars)
+    (if (null? vars)
+        sofar
+        (aux (if (member (car vars) sofar)
+                 sofar
+                 (cons (car vars) sofar))
+             (cdr vars))))
+  (aux null vars))
+
+(define (instantiate t)
+  (subst-all (polyT-tvar t)
+             (new-type)
+             (polyT-texpr t)))
+```
+
+We need to amend our unification algorithm. When a polymorphic type is encountered, it must be instantiated with a fresh variable and then unified (these cases need to be added before the handling of variable types in `unify`).
+```racket
+          [(polyT? t1)
+           (unify (list* (cons (instantiate t1) t2)
+                         rst))]
+          [(polyT? t2)
+           (unify (list* (cons t1 (instantiate t2))
+                         rst))]
+```
+
+In practice it might take a bit more work to get polymorphic types to work properly, but the above at least gives you an idea of what is involved.
+
+## Value restriction
+
+There is an important problem related to polymorphic types that is worth discussing. It relates to mutation in combination with polymorphic typing. Here's an example (we can make a similar example using functions):
+```ocaml
+let r = ref None;;
+r := Some "hi";;
+1 + valOf (!r)
+```
+
+Let us think of what each line does.
+
+- The first line creates a reference, and must give it a type. in this this case that type is `'a option ref`.
+- The second line puts a new value in the reference. The value's type is `string option`, which is compatible with the contained type `'a option`.
+- The third line recovers the value stored in the reference, a `'a option` value, grabs the actual value in the option, of polymorphic type `'a`, then adds 1 to it. This will also typecheck.
+
+So we have three lines that according to our rules should typecheck. But at runtime we will get an error, as we are adding 1 to a string! Our type system is no longer sound!
+
+There are two lessons to learn from this. The first is that soundness of a type system needs to be proven in some formal way, and a decent amount of programming language theory is devoted to that goal. The second is of course that we need to make some changes to our type system that don't allow programs like the one above.
+
+The specific change needed is what is known as "value restriction". It says that generalizing variables to form a polymorphic type will only happen if the expression on the right-hand-side of the assignment is a *syntactic value*. And `ref None` in the previous example is not a value, it is a function call. So it can't have any generalized types.
