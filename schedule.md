@@ -201,13 +201,13 @@ Day 4
 ## Week 14 (04/11-04/15)
 
 Day 1
-  ~ [Implementing Parametric Types](notes/interpret_inference.md)
+  ~ [Implementing Type Inference (cont)](notes/interpret_inference.md)
 
 Day 2
-  ~ TBA
+  ~ [Implementing Parametric Types](notes/interpret_inference.md)
 
 Day 3
-  ~ TBA
+  ~ [Subtyping](notes/subtyping.md)
 
 Day 4
-  ~ TBA
+  ~ [Subtyping (cont)](notes/subtyping.md)
