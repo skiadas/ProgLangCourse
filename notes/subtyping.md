@@ -90,7 +90,7 @@ For this we apply the essence of subtyping: We should be able to use the functio
 
 - We should be able to think of `f` as a function of type `T2 -> S2`.
 - So we must be able to call it with an input of type `T2`. But since `f` can only handle inputs of type `T1`, it must be the case that `T2 <: T1`.
-- The result of such a call would be of type `S1`. But we must be able to think of it as a result of type `S2. So it must be the case that `S1 <: S2`.
+- The result of such a call would be of type `S1`. But we must be able to think of it as a result of type `S2`. So it must be the case that `S1 <: S2`.
 
 So we have:
 
