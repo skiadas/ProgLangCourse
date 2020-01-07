@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>interpreter</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="building-an-interpreter">Building an Interpreter</h1>
+<p>To follow along, check out the programming assignments project, and look into the folder called <code>interpreter</code>.</p>
+<p>Building an interpreter for a programming language is one of the best ways to understand the language’s precise semantics. An interpreter consists of various components. First of all, a “program” in the language comes in essentially 4 forms:</p>
+<ul>
+<li>The string of actual characters in the program file.</li>
+<li>The “tokens” that these characters form, like the words in a “normal” language.</li>
+<li>The “surface language” constructs that are essentially sentences formed out of those tokens.</li>
+<li>The “core language” constructs that are obtained from the surface language ones by means of a “desugaring” process. For instance the “and” of two expressions might turn into an “if-then-else” and so on.</li>
+</ul>
+<p>Building an interpreter therefore consists of various components:</p>
+<ul>
+<li>A <strong>lexer</strong>, that takes the initial string of characters and produces the tokens. This is typically based on regular expression rules that identify the different tokens.</li>
+<li>A <strong>parser</strong>, that takes the list of tokens and forms surface language constructs out of them. Both of these steps are based on the syntax rules for the language.</li>
+<li>A <strong>desugarer</strong>, that takes the surface language construct and converts it into an equivalent core language construct.</li>
+<li>An <strong>evaluator</strong>, that takes a core language construct and evaluates it. It needs to also manage the dynamic environment and possibly other relevant information.</li>
+<li>If the language has static type-checking, then the <strong>type-checker</strong> needs to run before the evaluator in order to determine if the program properly type-checks, before evaluating it.</li>
+</ul>
+<p>From our point of view the interesting part is the evaluator, and perhaps the desugarer. But we will look at all pieces. If you load the latest version of the assignments project you will find an “interpreter” folder. We will now discuss the various parts in that folder. You will get to work with the files in that folder both for your next assignment and for your final project.</p>
+<h2 id="types">Types</h2>
+<p>The “types” files are the heart of the implementation. There are two files, one named <code>types.mli</code> and one named <code>types.ml</code>.</p>
+<p>The “mli” file is an interface file, basically implementing what we called <em>module signatures</em>. It contains definitions for the methods and types that other files need to access. More precisely, it contains the following:</p>
+<ul>
+<li>The exceptions that you may need to raise, that suggest something went wrong in the process (say you are using an identifier that doesn’t have a value yet).</li>
+<li>A variant type <code>exprS</code> for the different “surface language” expressions, the kinds of constructs that the language’s user would enter as instructions.</li>
+<li>A variant type <code>exprC</code> for the different “core language” expressions, the fundamental building blocks of the language.</li>
+<li>A variant type <code>value</code> for the kinds of values that the evaluation of an expression in the language may produce.</li>
+<li>An “environment” type <code>env</code> to use for symbol lookup, along with methods for storing something in an environment or looking something up in it.</li>
+<li>A <code>desugar</code> function that turns a surface language expression to a core language expression. You will need to implement a new branch of this function after each construct you add to the language.</li>
+<li>Two functions, <code>interp</code> and <code>evaluate</code>, that turn a core language expression into a value. One of the two functions expects an environment, and we will discuss the importance of this later. The most important part of the implementation of the interpreter is the code you will be adding to these expressions.</li>
+<li>A function <code>valToString</code> to be used for printing the resulting value back at the user.</li>
+</ul>
+<p>The <code>types.ml</code> file contains implementations on all the functions described above, along with other helper functions. The majority of the implementation of a new programming language lies in the code in this file. This file essentially contains the <em>semantics</em> of your programming language. The other files are more concerned with syntax.</p>
+<h2 id="parsing">Parsing</h2>
+<p>Parsing turns the program from a string into an internal “surface language” representation. It is separated in two steps, the “lexer” and the “parser”. The two relevant files are <code>lexer.mll</code> and <code>parser.mly</code>. These are files with a special syntax. We will add to them as we expand the language.</p>
+<p>You can read about these two files and their syntax at <a href="http://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html">this document</a>.</p>
+<p><code>parser.mly</code> is the first file to look at. It defines the series of “tokens”, along with their precedence rules. It also contains a series of instructions on what to do when a specific sequence of tokens appears in a file; it is converted into a corresponding surface language construct. The file has the following parts:</p>
+<ul>
+<li><p>An initial section where the Types are loaded from the <code>types.mli</code> file.</p></li>
+<li><p>A section where tokens are listed. This contains for instance the following:</p>
+<ul>
+<li><code>%token &lt;float&gt; FLOAT</code> says that there is a token called <code>FLOAT</code> that contains in it a value of type <code>float</code>. Not all tokens need to contain information.</li>
+<li><code>%token DBLSEMI</code> says that there is a token called <code>DBLSEMI</code> that contains no extra information.</li>
+<li><code>%nonassoc FLOAT</code> is an instruction that suggests that the FLOAT tokens behave in a non-associative way (so we can’t have say 3 of them in a row without specifying parentheses; not that it makes sense to have even two floats next to each other anyway).</li>
+</ul></li>
+<li><p>A small section where the result types are stated:</p>
+<ul>
+<li><code>%start main</code> says that the main parsing unit, which will be listed further down the file, will be the one called <code>main</code>.</li>
+<li><code>%type &lt;Types.resultS&gt; main</code> says that the return type of a unit called <code>main</code> is <code>Types.resultS</code>. In other words the results of our parsers are surface language expressions.</li>
+</ul></li>
+<li><p>The main part follows, where a series of “production rules” are listed, the first one being: <code>main:     | headEx DBLSEMI               { $1 }   ;</code> which says that a “full expression” to be processed would consist of some series of tokens that match a <code>headEx</code>, specified later in the file, followed by the <code>DBLSEMI</code> token. Further, the <code>$1</code> indicates that the value to be returned is the one that comes from the first thing in the list, namely <code>headEx</code>.</p>
+<p>After that comes: <code>headEx:     | expr                         { $1 }   ;</code> that specifies that a <code>headEx</code> constists of an <code>expr</code>. Finally: <code>expr:     | FLOAT                        { NumS $1 }   ;</code> says that one of the possibilities for an expression is for a <code>FLOAT</code>, and in that case we use the number stored in there, which was of type <code>float</code>, and put it together with the <code>NumS</code> constructor to form the resulting value. A lot of what we will have to do is add more cases below this one.</p></li>
+</ul>
+<p><code>lexer.mll</code> is the other file. It will define specific expressions to capture the specified tokens. It contains the following:</p>
+<ul>
+<li>An initial section that loads the <code>Parser</code> in order to have access to the tokens defined there, as well as define some exceptions.</li>
+<li>The next that follows is a series of <code>let</code> statements that define various regular expressions. After that the <code>rule</code> section specifies the order in which these regular expressions should be matched and what they should be converted to.</li>
+</ul>
+<h3 id="driver">Driver</h3>
+<p>Finally, there is a <code>driver.ml</code> file that essentially puts all the other files together. You will likely not need to mess much with this file, but you can do so if you want to change the interpreter’s external behavior.</p>
+<h3 id="compiling">Compiling</h3>
+<p>The <code>README</code> file contains instructions on how to “compile” all the above files into one outcome. The steps are as follows:</p>
+<ul>
+<li><code>ocamlyacc parser.mly</code> processes the parser file, and produces <code>parser.ml</code> and <code>parser.mli</code>.</li>
+<li><code>ocamllex lexer.mll</code> processes the <code>lexer.mll</code> file, and produces <code>lexer.ml</code>.</li>
+<li><code>ocamlc -c types.mli parser.mli lexer.ml parser.ml types.ml driver.ml</code> compiles the different OCAML files, and produces output files with extensions <code>.cmi</code> or <code>.cmo</code>.</li>
+<li><code>ocamlc -o lang lexer.cmo parser.cmo types.cmo driver.cmo</code> links the different object files together into one executable called <code>lang</code>.</li>
+<li>From this point on you can run the executable using <code>./lang</code>. This starts an interactive interpreter section that will look a bit like <code>utop</code>s, minus the fancy features.</li>
+</ul>
+<p>Depending on which file you change, you may need to repeat one or more of the above steps.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ import Text.Pandoc.JSON
 
 fixAnswer :: Inline -> Inline
 fixAnswer (Str "ANSWERSPACE") = RawInline (Format "latex") "\\makespace"
-fixAnswer (Link xs (t, n)) = Link xs (fixLink t, fixLink n)
+fixAnswer (Link attr xs (t, n)) = Link attr xs (fixLink t, fixLink n)
 fixAnswer x = x
 
 isMarkdown :: String -> Bool

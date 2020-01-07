@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>further_resources</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="further-resources-on-programming-languages">Further resources on Programming Languages</h1>
+<h2 id="online-courses-and-notes">Online courses and notes</h2>
+<p>A lot of the course is based on the following two resources. Following these courses would be a great learning experience:</p>
+<ul>
+<li><a href="http://homes.cs.washington.edu/~djg/teachingMaterials/spl/">Dan Grossman’s PL Course</a> has a lot of material available, and occasionally is offered through Coursera. There are videos on the site, assignments and notes. The course covers SML (a language close to OCAML), Racket and Ruby and examines numerous topics along the way.</li>
+<li><a href="http://cs.brown.edu/courses/cs173/2012/Syllabus/">Shriram Krishnamurthi’s PL Course</a> using a version of Racket and building an interpreter along the way. There are extensive videos, assignments to build an interpreter for a version of Python, and a <a href="http://cs.brown.edu/courses/cs173/2012/book/">book</a>.</li>
+</ul>
+<h2 id="languages-worth-looking-into">Languages worth looking into</h2>
+<p>I have ordered the languages in the order that emphasizes the new ideas you will learn by studying these languages.</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Haskell_(programming_language)">Haskell</a> is a lazy functional programming language where all evaluations are delayed until actually needed. It has an immensely expressive type system, and is often a language where new ideas in PLs are implemented.</li>
+<li><a href="https://en.wikipedia.org/wiki/Prolog">Prolog</a> is a great way to learn about <em>Logic Programming</em>, a different paradigm. It has strong links to Artificial Intelligence and Linguistics. Or you can try <a href="https://en.wikipedia.org/wiki/Mercury_(programming_language)">Mercury</a>.</li>
+<li><a href="https://en.wikipedia.org/wiki/Erlang_(programming_language)">Erlang</a> was designed by the Ericsson telecommunications company to support distributed, fault-tolerant, soft real-time, highly available, non-stop applications. You can literally hot-swap your update to your application without stopping the system. Erlang is a great place to learn about concurrency and fault tolerance.</li>
+<li><a href="https://en.wikipedia.org/wiki/Icon_(programming_language)">Icon</a> is a very interesting high-level language emphasizing “goal-oriented execution”.</li>
+<li><a href="https://en.wikipedia.org/wiki/Forth_(programming_language)">Forth</a> is a stack-based imperative programming language that feels quite different from other languages. See also <a href="http://factorcode.org/">Factor</a>.</li>
+<li><a href="https://en.wikipedia.org/wiki/Idris_(programming_language)">Idris</a> is a purely functional programming language with dependent types (types that depend on a value), something fairly rare. It is used in interactive theorem proving. <a href="https://en.wikipedia.org/wiki/Agda_(programming_language)">Agda</a> and <a href="https://en.wikipedia.org/wiki/Coq">Coq</a> are other languages from the same category.</li>
+<li><a href="https://www.rust-lang.org/">Rust</a> is a systems programming language (i.e. serving similar goals to C) with strong functional influences and aiming for type safety.</li>
+<li><a href="https://en.wikipedia.org/wiki/Oz_(programming_language)">Oz</a> is a trully multi-paradigm programming language combining almost every programming paradigm.</li>
+<li><a href="https://en.wikipedia.org/wiki/Scala_(programming_language)">Scala</a> is emphasizing functional programming paradigms combined with objects and a strong type system. It runs on top of the Java Virtual Machine.</li>
+<li><a href="https://en.wikipedia.org/wiki/Clojure">Clojure</a> is a language based on the Lisp/Racket family, also running on top of the JVM.</li>
+<li><a href="https://en.wikipedia.org/wiki/F_Sharp_(programming_language)">F#</a> is a functional programming language derived from the ML family (OCAML) and targeting the .NET platform.</li>
+<li><a href="https://en.wikipedia.org/wiki/C_Sharp_(programming_language)">C#</a> is an object-oriented language with commonalities with C++ and targeting mostly the Windows Platform and .NET.</li>
+</ul>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

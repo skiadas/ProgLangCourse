@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>functions_list</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="standard-higher-order-list-functions">Standard higher-order list functions</h1>
+<p>There is a rich set of functions on lists, that you can find in the <a href="http://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html">List module</a>. We will implement these from scratch in this section. Most of these functions can be extended from lists to other “container types”.</p>
+<ul>
+<li><code>map</code> has a function act on each element of the list, and produces a new list with the results.</li>
+<li><code>filter</code> takes as input a <em>predicate</em> (a function returning true/false) and returns a list containing only those values that return true.</li>
+<li><code>fold_left</code> accumulates the values in the list, given an initial value and a function describing how to accumulate each new term.</li>
+<li><code>fold_right</code> does the same, but starting from the other end.</li>
+<li><code>iter</code> calls a function with no return value (<code>'a -&gt; unit</code>) on each element of the list.</li>
+<li><code>for_all</code> takes a predicate and a list and returns whether all elements of the list would return true.</li>
+<li><code>exists</code> takes a predicate and a list and returns whether at least one element of the list would return true.</li>
+<li><code>find</code> takes a predicate and a list and searches for the first element in the list satisfying the prediate.</li>
+<li><code>partition</code> takes a predicate and a list and returns two lists, one holding the values that the predicate returns as true and one holding those the predicate returns as false.</li>
+</ul>
+<p>We have already seen <code>map</code>, <code>fold_left</code>, <code>fold_right</code>. We will now implement <code>filter</code> in a couple of different ways, both directly and using <code>fold_right</code>.</p>
+<pre><code>(* filter: (&#39;a -&gt; bool) -&gt; &#39;a list -&gt; &#39;a list *)
+let rec filter p xs = match xs with
+| [] -&gt; []
+| x :: xs&#39; -&gt; if p x
+              then x :: filter p xs&#39;
+              else filter p xs&#39;
+
+let filter p xs = fold_right (fun x acc -&gt; if p x then x :: acc else acc) xs []
+let filter p xs =
+    let add_if_true x acc = if p x then x :: acc else acc
+    in fold_right add_if_true xs []</code></pre>
+<p>Question: Could we have used <code>fold_left</code>? Try it!</p>
+<p>Before some practice problems, let us implement <code>iter</code> both via direct recursion and using folds:</p>
+<pre><code>(* iter: (&#39;a -&gt; unit) -&gt; &#39;a list -&gt; unit *)
+let rec iter f xs = match xs with
+| [] -&gt; ()
+| x :: xs&#39; -&gt; (f x; iter f xs&#39;)
+
+let iter f xs = fold_left (fun x () -&gt; f x) () xs
+
+(* To test. Should print in that order *)
+iter print_endline [&quot;hi&quot;; &quot;there&quot;; &quot;you&quot;];;</code></pre>
+<p>Note that using <code>fold_right</code> here would not be right: It would have performed the applications in the reverse list order, usually not the desired effect.</p>
+<h2 id="practice-problems">Practice problems</h2>
+<ol type="1">
+<li>Implement the function <code>rev</code> that reverses a list, using <code>fold_left</code>.</li>
+<li>Implement <code>for_all</code> using <code>fold_left</code> or <code>fold_right</code> (ideally do it both ways). It should have type <code>('a -&gt; bool) -&gt; 'a list -&gt; bool</code>.</li>
+<li>Implement <code>exists</code> using <code>fold_left</code> or <code>fold_right</code> (ideally do it both ways). It should also have type <code>('a -&gt; bool) -&gt; 'a list -&gt; bool</code>.</li>
+<li>Implement <code>partition</code> both with a direct recursion and using <code>fold_right</code>. It should have type <code>('a -&gt; bool) -&gt; 'a list -&gt; 'a list * 'a list</code>.</li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

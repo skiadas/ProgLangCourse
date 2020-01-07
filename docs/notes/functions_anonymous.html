@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>functions_anonymous</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="anonymous-functions-and-functions-as-values">Anonymous Functions and Functions as Values</h1>
+<h2 id="anonymous-functions">Anonymous Functions</h2>
+<p>Much of the power and flexibility of functional programming comes from its grounding in the “lambda calculus”, an alternative but equivalent model of computation to Turing Machines. The lambda calculus emphasizes “abstraction” of variables over functions. Namely the main construct takes an expression like <code>x + x</code> and “abstracts” the variable <code>x</code> to obtain a function <code>fun(x) -&gt; x + x</code>.</p>
+<p>In programming languages this idea translates to the ability to create an “anonymous” function via a similar construct. Namely the following is valid OCAML code:</p>
+<pre><code>fun x -&gt; x + x</code></pre>
+<p>If you type this in OCAML you will get back:</p>
+<pre><code>int -&gt; int = &lt;fun&gt;</code></pre>
+<p>OCAML understood this as defining a new function. But just as if you had typed <code>(2, 3)</code>, it just prints that information and that information is then lost. We could do something with it first though, like actually calling the function right away, or storing it in a variable:</p>
+<pre><code>(fun x -&gt; x + x) 5;;       (* prints 10 *)
+
+let f = fun x -&gt; x + x
+in f 5;;</code></pre>
+<p>In fact in many ways the following two lines are equivalent:</p>
+<pre><code>let f = fun x -&gt; x + x
+let f x = x + x</code></pre>
+<p>The second version is simply “syntactic sugar” for the first version. To put it another way: Once we have “anonymous functions” in our language, and we have let bindings, we also automatically have “named functions”. The only exception to that is the fact that recursive functions are a bit harder to pull off, as since the anonymous function has no name it would be hard to call it recursively. We will revisit this topic later.</p>
+<p>Before moving on, let us consider using a previously defined function binding in a later assignment, like so:</p>
+<pre><code>let g x = x + 3
+let f1 = g
+let f2 x = g x</code></pre>
+<p>Exercise:</p>
+<p>Describe the differences between the <code>f1</code> assignment and the <code>f2</code> assignment. Identify how they behave differently, and what may happen in the future. The <code>f2</code> assignment is often called <em>unnecessary function wrapping</em>.</p>
+<h2 id="functions-as-values">Functions as Values</h2>
+<p>We have briefly discussed the idea of functions as values. We said that they are actually “closures”, i.e. the function bodies themselves together with the current environment at the point of definition. What we focus on in this section is the idea that these closures can be the inputs to other functions, or the returned values from other functions.</p>
+<p>Let’s look at an example: Here is a, perhaps somewhat silly, function “evaluate” that takes a pair of a function and a value, and returns the result of evaluating the function at that value:</p>
+<pre><code>let evaluate (f, x) = f x</code></pre>
+<p>Before we continue, use type inference to determine the type of this function.</p>
+<p>Let us look at another example: The function <code>double</code> takes as input a function, and returns as its result a function that on a given input applies <code>f</code> twice in a row. So the definition of this could look like:</p>
+<pre><code>let double f = fun x -&gt; f (f x)</code></pre>
+<p>Once again, start by determining the type of <code>double</code> using type inference.</p>
+<p>Let’s see this in action. We define a function that adds 3 to a number, then we feed it into <code>double</code>:</p>
+<pre><code>let add3 x = x + 3
+let double f = fun x -&gt; f (f x)
+let mystery = double add3</code></pre>
+<p>Here is another example: A function that takes as input an integer and returns the function that to an integer adds this integer. We can define it thus:</p>
+<pre><code>let addTo x = fun y -&gt; x + y</code></pre>
+<p>We could then write our <code>mystery</code> function earlier as:</p>
+<pre><code>let mystery = double (addTo 3)</code></pre>
+<p>Functions that return functions as their values will play a recurring theme, especially in our study of currying in the next section.</p>
+<p>Question: Why does <code>addTo</code> work? Why does the returned function know what <code>x</code> is when it gets called later on?</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

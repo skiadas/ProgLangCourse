@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>exceptions</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="exceptions-and-exception-handling">Exceptions and Exception Handling</h1>
+<p>Exceptions are an important practical tool for controlling a program’s flow. There are often situations where the normal execution needs to be stopped, for example trying to divide a number by 0, or trying to find something in an empty list. Some times you can represent that failure using option types, but it is often convenient to have another way.</p>
+<p>Exception mechanisms typically consist of the following three components:</p>
+<ul>
+<li>A way to “raise” an exception at some point in the program.</li>
+<li>A way to set up a “handler” to respond to a risen exception.</li>
+<li>A way to create new types of exceptions.</li>
+</ul>
+<h2 id="raising-an-exception">Raising an exception</h2>
+<p>Raising an exception is syntactically simple. We have an expression <code>raise e</code> where <code>e</code> must be an “exception” and we “raise it”. The interesting question is: what is the type of <code>raise e</code>?</p>
+<p>If you think about it, it has to be any type, because it needs to type-check no matter where we place it in a program. This is often called the “bottom” type, it is a “subtype” of any other type.</p>
+<p>The semantics of raising an exception is more interesting. The current execution is completed aborted, and control returns to some previous time where a handler was established. The handler is then allowed to continue the evaluation.</p>
+<h2 id="handling-an-exception">Handling an exception</h2>
+<p>The main construct for dealing with exceptions is the “try-with” block. It looks as follows:</p>
+<pre><code>try e with
+| p1 -&gt; e1
+| p2 -&gt; e2
+| p3 -&gt; e3</code></pre>
+<p>where e, e1, e2, e3 are expressions and p1, p2, p3 are patterns that match exceptions. The evaluation of this block proceeds as follows: <code>e</code> is evaluated, and if there are no raised exceptions its value is returned. If an exception is raised then it is compared to the patterns in order, until one matches, then the corresponding expression is executed. If none of the patterns matches, the raised exception is send to an earlier handler, if one was set up.</p>
+<p>From a typechecking point of view, e, e1, e2, e3 must have the same type, and the patterns must agree with the exception type.</p>
+<h2 id="creating-new-exceptions">Creating new exceptions</h2>
+<p>The exception type, <code>exn</code> is a very special variant type. You can imagine it looking like this:</p>
+<pre><code>type exn = Not_found
+         | Failure of string
+         | Invalid_argument of string
+         | ....</code></pre>
+<p>There are some system-provided exceptions, but the user/programmer and the various libraries add their own. This makes <code>exn</code> a very unusual type: We can add more variants to it at any given time. We do this with a syntax like:</p>
+<pre><code>exception OurOwn of t
+exception DivisionByZero</code></pre>
+<p>In a <code>raise e</code> expression, the expression <code>e</code> must be of type <code>exn</code>.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

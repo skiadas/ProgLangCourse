@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>functions_higher_order</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="higher-order-functions">Higher-order functions</h1>
+<p>Our discussion of functions as values and currying naturally leads to the idea of higher-order functions. In principle higher-order functions are simply functions that take as input, amongs other things, other functions. For example here is a function that “composes” two other functions:</p>
+<pre><code>let compose f g = fun x -&gt; f (g x)</code></pre>
+<p>Question: What is the type of <code>compose</code>? What is another way of writing it?</p>
+<h2 id="maps">Maps</h2>
+<p>The term higher-order functions is often more associated with <em>functions that operate on compound structures and take the action to be performed as a parameter function</em>. Nowhere is this best exemplified than in the List module. Lists are meant to simply hold a list of items to operate on. For example we can square all elements on a list by the following:</p>
+<pre><code>let rec square xs = match xs with
+| [] -&gt; []
+| x :: xs&#39; -&gt; x * x :: square xs&#39;</code></pre>
+<p>What if we wanted to triple the elements? Or add 5 to them? We could write very similar functions in this case, but the amount of repetition should suggest that we should find a better way around it. This is not unlike the situation of using for loops to operate on the elements of an array. In OCAML we can be more expressive about it: Write a function that takes as input a function to operate on lists, and returns the function we defined above. Here’s how that might look like:</p>
+<pre><code>let map f =
+    let rec apply_f xs = match xs with
+    | [] -&gt; []
+    | x :: xs&#39; -&gt; f x :: apply_f xs&#39;
+    in apply_f</code></pre>
+<p>Question: What is the type of <code>apply_f</code>? What is the type of <code>map</code>?</p>
+<p>So we might use this as follows:</p>
+<pre><code>let square = map (fun x -&gt; x * x)      (* returns the &quot;square a list&quot; function *)
+square [1; 4; 6]
+map (fun x -&gt; x * x) [1; 4; 6]         (* Equivalent to the line above *)</code></pre>
+<p>Before we move on let us see a slightly different, and more common, way of writing this function, which will serve as a model for the functions we will write in the future:</p>
+<pre><code>let rec map f xs = match xs with
+| [] -&gt; []
+| x :: xs&#39; -&gt; f x :: map f xs&#39;</code></pre>
+<p>The main point is essentially <strong>separation of concerns</strong>, or if you prefer a <strong>decoupling of responsibilities</strong>:</p>
+<ul>
+<li><code>map</code> only concerns itself with how to traverse the list. It does not really care what happens to the elements on the list, nor should it. Functions should ideally try to do only one thing, and make sure they do it well.</li>
+<li>The parameter function <code>f</code> passed to <code>map</code> is the one that knows what should happen to the elements on the list. It also does not need to care at all about the fact that it traverses a whole list, it just needs to know what to do to an element of the list.</li>
+</ul>
+<p>Higher-order functions, along with the convenience of anonymous functions, offers this powerful decoupling functionality.</p>
+<p>The function <code>map</code> is just the first in a series of higher order functions we will explore. We will see more of those in the next section. For now we focus on perhaps the two most important higher-order functions, <code>fold_left</code> and <code>fold_right</code>.</p>
+<h2 id="folds">Folds</h2>
+<p>Folding is simply the act of accumulating over a list. Let us think of the basic for loop:</p>
+<ul>
+<li>We declare and initialize an “accumulator”.</li>
+<li>As we visit each element in the list, we update the accumulator based on our problem’s logic of how the current element is supposed to contribute.</li>
+<li>When we visit every element in the list, the accumulator holds the final answer.</li>
+</ul>
+<p>As a simple example, let us revisit the question of adding all numbers in the list:</p>
+<pre><code>let rec sum xs = match xs with
+| [] -&gt; 0
+| x :: xs&#39; -&gt; x + sum xs&#39;</code></pre>
+<p>This would be called a right-fold. Essentially there are two possible ways we could try to add all the numbers in the list, starting with an accumulator of <code>0</code>: We could add them left-to-right, or right-to-left:</p>
+<pre><code>sum [1; 2; 3] ---&gt; ((0 + 1) + 2) + 3          (* left fold *)
+sum [1; 2; 3] ---&gt; 1 + (2 + (3 + 0))          (* right fold *)</code></pre>
+<p>Question: Look back at the implementation of <code>sum</code> above, and make sure you understand which of these two expressions it produces.</p>
+<p>Let’s see how we can generalize the definition of <code>sum</code> above. Recall that our main goal is to separate the idea of iterating over the list from the operations that are meant to be performed on the elements of the list. In the above definition there are two parts that are specific to the summing operation, as opposed to the idea of the list traversal:</p>
+<ul>
+<li>The value to be returned at the empty list (in this case 0). This is effectively the initial value of the accumulator, and in general would need to be provided.</li>
+<li>The operation to be performed between the new value <code>x</code> and the accumulated value from recursion, <code>sum xs'</code>. We will need to be provided a function that takes these two inputs and combines them appropriately. If the values in the list have a type <code>'a</code> and the accumulator has a type <code>'b</code>, then this provided function would have type <code>'a -&gt; 'b -&gt; 'b</code>.</li>
+</ul>
+<p>Here is how that would look like:</p>
+<pre><code>(* fold_right: (&#39;a -&gt; &#39;b -&gt; &#39;b) -&gt; &#39;a list -&gt; &#39;b -&gt; &#39;b *)
+let rec fold_right f xs acc = match xs with
+| [] -&gt; acc
+| x :: xs&#39; -&gt; f x (fold_right f xs&#39; acc)</code></pre>
+<p>Notice how the call to <code>f</code> in the last clause takes the place of the addition in the example of <code>sum</code>.</p>
+<p>We could now implement sum as:</p>
+<pre><code>let sum xs = fold_right (fun x acc -&gt; x + acc) xs 0
+let sum xs = fold_right (+) xs 0           (* alternative *)</code></pre>
+<p>A function that multiplies all the numbers would be:</p>
+<pre><code>let mult xs = fold_right ( * ) xs 1</code></pre>
+<p>We could even implement our function <code>map</code> as a call to <code>fold_right</code>. The accumulator starts as the empty list, and the function combines the so-far-accumulated elements, a list, with the value of the new element, to form a longer list:</p>
+<pre><code>let map f xs = fold_right (fun x rest -&gt; (f x) :: rest) xs []</code></pre>
+<p>Left folds are only a tad harder, and they operate more in the “state recursion” way. This would normally require a helper function, but the fact that <code>fold_left</code> takes as arguments the list and accumulator gives us all the state we need.</p>
+<p>One other unusual thing is that the function in the left fold expects its arguments in the opposite order. This is done in order to reflect the left-folding nature.See the two examples of summation earlier. It also reverse the order of the other two parameters: the initial value and the list of items. Here <code>'a</code> is the accumulator’s type, and <code>'b</code> is the list elements’ type:</p>
+<pre><code>(* fold_left: (&#39;a -&gt; &#39;b -&gt; &#39;a) -&gt; &#39;a -&gt; &#39;b list -&gt; &#39;a *)
+let rec fold_left f acc xs = match xs with
+| [] -&gt; acc
+| x :: xs&#39; -&gt; fold_left f (f acc x) xs&#39;</code></pre>
+<p>Note that our implementation of <code>fold_left</code> is naturally tail-recursive, while our implementation of <code>fold_right</code> is not.</p>
+<p>Whenever you find yourself wanting to accumulate information in a list, you should think of using a fold.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

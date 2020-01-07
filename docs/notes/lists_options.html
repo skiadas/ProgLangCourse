@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>lists_options</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="list-and-option-types">List and Option Types</h1>
+<p>We will discuss in this section two new values and corresponding types, that are emblematic of many functional programming ideas.</p>
+<h2 id="lists">Lists</h2>
+<p>Lists are essentially a sequence of elements of the same type, that can only be accessed in the order they appear. Coming from more mainstream languages, the closest analog would be single-linked lists.</p>
+<p>Technically, a value of type <code>list</code> is:</p>
+<ul>
+<li>either the value <code>[]</code>, representing an empty list, or</li>
+<li>the expression <code>a :: l</code> where <code>l</code> is a previously constructed list of elements of some type, and <code>a</code> is another element of that same type. We say that we <em>prepend</em> <code>a</code> to <code>l</code>.</li>
+</ul>
+<p>For example, we could have the list <code>1 :: 2 :: 3 :: []</code>, which parenthesized would look like <code>1 :: (2 :: (3 :: []))</code>.</p>
+<p>A syntactic sugar for the same thing would be <code>[1; 2; 3]</code>. We will refer to these as <em>list literals</em>.</p>
+<p>Essentially lists are <em>containers</em> for values of another type. For that reason saying a list has type <code>list</code> is not enough; we must specify the contained type. We do this by prepending. So:</p>
+<ul>
+<li>A list of type <code>int list</code> contains integers.</li>
+<li>A list of type <code>string list</code> contains strings.</li>
+<li>A list of type <code>(int * string) list</code> contains pairs of an int and a string. The parentheses are necessary. In abuse of notation, in literal notation the parentheses for the pairs can be omitted (but we will never do so). For example, <code>[1, "hi"; 2, "this"]</code> instead of <code>[(1, "hi"); (2, "this")]</code>.</li>
+<li>A list of type <code>int list list</code> contains a list of “lists of integers”. An example value would be <code>[[1; 2]; [3; 4]]</code>.</li>
+</ul>
+<p>We will learn how to work with lists in a little while.</p>
+<h2 id="option-types">Option types</h2>
+<p>Option types are a feature not often found in mainstream languages. Option types are effectively containers for another type that allow for the possibility that there is no value. More precisely, a value of option type would be:</p>
+<ul>
+<li>either the keyword <code>None</code>, indicating the absense of a value, or</li>
+<li>the expression <code>Some v</code> where <code>v</code> is some value of the desired type.</li>
+</ul>
+<p>As with lists, the actual type needs to specify the contained type. So we can have:</p>
+<ul>
+<li><code>Some 5</code>, a value of type <code>int option</code>.</li>
+<li><code>Some "string"</code>, a value of type <code>string option</code>.</li>
+<li><code>Some [1; 2; 3]</code>, a value of type <code>int list option</code>.</li>
+</ul>
+<p>and so on. So a value of option type is either a value of the contained type, or no value at all.</p>
+<p>This is the kind of thing that you could handle in other language via <code>null</code> or <code>nil</code>. The approach using option types, and the lack of something like <code>null</code> makes it so that the type signatures of our functions can tell us when we are performing something that might not have a value. For example, we could imagine a function that looks for a integer in a list of integers, and returns that integer if it finds it. What should it do if it does not find it? The option type gives us a way around that. The function would have signature:</p>
+<pre><code>val f: int * int list -&gt; int option</code></pre>
+<p>A function whose signature says that it returns an <code>int</code> must in fact always return an int, it can’t fail silently by returning <code>null</code>. This is actually a very powerful feature, we get <strong>more expressive types</strong>. Our types tell us more about the behaviours of our functions.</p>
+<h2 id="type-practice">Type practice</h2>
+<p>Before we move on, and in order to practice some of the above, write a literal value of each of the following types:</p>
+<ol type="1">
+<li><code>int * int option</code></li>
+<li><code>(int * int) option</code></li>
+<li><code>int option list</code></li>
+<li><code>int list option</code></li>
+<li><code>int list * int option</code></li>
+<li><code>int * int option list</code></li>
+<li><code>(int * int option) list</code></li>
+<li><code>(int * int) option list</code></li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

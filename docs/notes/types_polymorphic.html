@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>types_polymorphic</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="polymorphic-types">Polymorphic Types</h1>
+<p>One of the most powerful ideas in functional programming, and one that has really found its way in mainstream languages in the form of <em>generics</em>, is that of <em>polymorphic types</em>.</p>
+<h2 id="parametric-polymorphism">Parametric Polymorphism</h2>
+<p>In general “polymorphic” means “takes many shapes”. In this context we are talking about functions. For example think of the function <code>hd</code> we wrote for picking out the first element of the list. That function should work just as well if the list contains integers, or floats, or strings, or even other lists. So any of the following could be the type of <code>hd</code>, depending on what items the list contains:</p>
+<pre><code>val hd: int list -&gt; int
+val hd: string list -&gt; string
+val hd: float list -&gt; float
+val hd: int list list -&gt; int list
+val hd: (int * int) list -&gt; int * int</code></pre>
+<p>and so on. The function, and our code, does not really care what types of values there are, it works regardless. We can in essence consider the contained type as a <em>parameter</em> of our function. This is called <strong>parametric polymorphism</strong>.</p>
+<p>In OCAML, and most functional programming languages, you can specify contained types like this with a “parameter type”. Depending on the function’s usage later on, that parameter type is <em>instantiated</em> to a more specific type.</p>
+<p>In OCAML parameter types are specified with a single quote followed by lowercase letters, like <code>'a</code>, <code>'b</code> etc. So we could define our <code>hd</code> function via:</p>
+<pre><code>val hd: &#39;a list -&gt; &#39;a</code></pre>
+<p>Similarly our <code>zip2</code> method from a few days ago could be written with type:</p>
+<pre><code>val zip2: &#39;a list * &#39;b list -&gt; (&#39;a * &#39;b) list</code></pre>
+<p>If we then write:</p>
+<pre><code>hd (zip2 ([1; 3; 4], [&quot;hi&quot;, &quot;there&quot;]))</code></pre>
+<p>then in the evaluation <code>zip2</code> will be instantiated to have type <code>int list * string list -&gt; (int * string) list</code>, so with <code>'a = int</code> and <code>'b = string</code>, while <code>hd</code> will be instantiated with type <code>(int * string) list</code>, so with <code>'a = int * string</code>. This instantiation happens automatically for us; OCAML guesses what the correct values are via the process of type inference that we will describe in the future. Java’s generics this has to typically be specifically indicated in the code.</p>
+<h2 id="ad-hoc-polymorphism">Ad-hoc Polymorphism</h2>
+<p>There is another kind of polymorphism, known as <strong>ad-hoc polymorphism</strong> is some circles, a special case of which is <strong>operator overloading</strong>. While in parametric polymorphism the actual function code that will be executed is essentially the same, in ad-hoc polymorphism the system has to choose which function to associate to an identifier/symbol based on information like the parameter types.</p>
+<p>This behavior is best exemplified in C++ streams. Think of the line:</p>
+<pre><code>cout &lt;&lt; s;</code></pre>
+<p>What code is executed by the above line? That completely depends on the type/class of <code>s</code>. C++ will look at that class and search in the definition of that class for an implementation of <code>&lt;&lt;</code>. It is actually a bit more complicated, but that is the basic idea.</p>
+<p>Haskell implements this feature in a restricted form via what are called <em>type classes</em>, that we will not get into at the moment. OCAML doesn’t really have something analogous.</p>
+<h2 id="parametric-types-in-type-variants">Parametric Types in Type Variants</h2>
+<p>Parametric types can be used in type variant definitions. For example we can literally define the option type as follows:</p>
+<pre><code>type &#39;a option = None | Some of &#39;a</code></pre>
+<p>Note how the contained type is specified as a “parameter” on the left side; it is part of the defined type’s “name”. With this one line we are effectively defining a whole lot of “concrete” types, like <code>int option</code>, <code>int option option</code>, <code>int list option</code>, <code>(int * int) option</code> and so on.</p>
+<p>Except for the fact that we don’t really know yet how to define operators, we could define “lists” via:</p>
+<pre><code>type &#39;a list = [] | :: of &#39;a * &#39;a list</code></pre>
+<p>This is not actually valid OCAML code, but it portrays the idea. We could definitely do:</p>
+<pre><code>type &#39;a list = Nil | Cons of &#39;a * &#39;a list</code></pre>
+<p>Then to form the list <code>[1; 3; 4]</code> we could write <code>Cons (1, Cons (3, Cons (4, Nil)))</code>. It’s a bit ugly, but functional.</p>
+<h2 id="language-design-considerations">Language Design Considerations</h2>
+<p>All the above offers an interesting topic of conversation about language design. When you decide what features to put in a language, you have to decide how they will interact with each other, and what possibilities that creates. For example, if we allow type variants and parametric types into our language, then we can get for free both option types and list types, as well as a host of other useful examples. We do not need to offer each one of those as “special cases”; we just provide the building blocks for creating them and then add those base examples in a standard library that gets loaded in. A general principle in language design is to keep the core language <em>small</em> but with <em>orthogonal features</em> that can be combined in useful ways.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>pattern_matching</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="pattern-matching">Pattern-matching</h1>
+<p>Pattern-matching is a powerful way to do <em>structural deconstruction</em> of complex values. A “pattern” is a language construct that can be used on the left-hand side of let expressions, as well as the <code>match</code> expressions that we will see shortly, to suggest the form of the value and to pick out parts of that value.</p>
+<p>You have already used pattern-matching without knowing it. For instance when we wrote:</p>
+<pre><code>let f (x, y) = x + y
+f (1, 2)</code></pre>
+<p>we were actually using pattern-matching. We placed <code>(x, y)</code> in place of the parameter, and what we effectively told OCAML is “I expect this function to be called with the argument being a pair, and I want you to bind <code>x</code> to the first component of the pair and <code>y</code> to the second component when you evaluate the function body”. Later on when the call <code>f (1, 2)</code>, OCAML will compare the value <code>(1, 2)</code> to the pattern <code>(x, y)</code>, it will see that the formats match, and it will bind <code>x</code> to <code>1</code> and <code>y</code> to <code>2</code>.</p>
+<p>A similar example would be:</p>
+<pre><code>let (x, y) = (1, 2) in x + y;;</code></pre>
+<h2 id="pattern-definition">Pattern definition</h2>
+<p>We will start by describing the forms that a “pattern” can take. We will then discuss how a pattern matches a value. A pattern can be:</p>
+<ul>
+<li>An identifier (<code>x</code>, <code>y</code> etc).</li>
+<li>An underscore <code>_</code> (called the “catchall”).</li>
+<li>A tuple <code>(p1, p2, ..., pn)</code>, where each of the <code>p1, p2,...</code> are patterns.</li>
+<li>A literal value, e.g. <code>[]</code>, <code>()</code>, <code>234.1</code> etc.</li>
+<li>A “list pattern” <code>p1 :: p2</code>, where <code>p1</code> and <code>p2</code> are patterns.</li>
+<li>A “constructor pattern”. We will see more of these later, but for now this would be either <code>None</code> or <code>Some p</code> where <code>p</code> is another pattern, to match option values.</li>
+</ul>
+<p>Here then are some examples of patterns:</p>
+<pre><code>(_, x :: rest)
+(x, (y, z))
+(None, x)
+(Some (x, y), z)
+(Some x) :: rest</code></pre>
+<h2 id="pattern-matching-a-value">Pattern matching a value</h2>
+<p>When the program is evaluated, the question that will arise is whether a pattern <code>p</code> matches a value <code>v</code>, and what changes to the dynamic environment this would elicit. Here are the rules for that:</p>
+<ul>
+<li>An identifier will match any kind of value, and the environment will be extended to include that binding of the identifier to the value.</li>
+<li>An underscore will match any kind of value, and the environment will not change. The value is effectively ignored.</li>
+<li>A tuple will only match if the corresponding value has the same number of components, and if all the sub-patterns match the corresponding components of the value. The environment will only be extended by whatever bindings were created by the subpatterns.</li>
+<li>A literal-value-pattern will only match the corresponding value if it is in fact the same value. The environment remains unchanged.</li>
+<li>A list pattern <code>p1 :: p2</code> will only match a list of the form <code>v1 :: v2</code> where the pattern <code>p1</code> matches <code>v1</code> and the pattern <code>p2</code> matches <code>v2</code>.</li>
+<li>A “constructor pattern” matches a value if the value is also built by that constructor and the contained pattern matches the corresponding contained value. For example the pattern <code>Some (x, y)</code> will match a value <code>Some (2, 3)</code> and will bind <code>x</code> to <code>2</code> and <code>y</code> to <code>3</code>.</li>
+</ul>
+<p>Let us practice this a bit. Which of the following patterns match the corresponding values? What bindings do they produce? After you answer it on the board, test it on the OCAML interpreter by typing <code>let pattern = value;;</code>.</p>
+<ol type="1">
+<li>pattern <code>(Some _, x)</code>, value <code>(Some 3, (1, 2))</code>.</li>
+<li>pattern <code>x :: rest</code>, value <code>[1; 2; 3]</code>.</li>
+<li>pattern <code>x :: rest</code>, value <code>[]</code>.</li>
+<li>pattern <code>x :: []</code>, value <code>[1]</code>.</li>
+<li>pattern <code>x :: y :: []</code>, value <code>[(1, 3); (3, 2)]</code>.</li>
+<li>pattern <code>(None, Some x)</code>, value <code>(Some 3, Some 2)</code>.</li>
+</ol>
+<h2 id="the-match-with-construct">The <code>match-with</code> construct</h2>
+<p>The match-with construct offers us a powerful way to deconstruct values by using patterns. Its syntax is as follows:</p>
+<pre><code>match e with
+| p1 -&gt; e1
+| p2 -&gt; e2
+| p3 -&gt; e3
+...</code></pre>
+<p>A <code>match-with</code> expression is evaluated as follows:</p>
+<ul>
+<li>The expression <code>e</code> is evaluated in the current environment and produces a value <code>v</code>.</li>
+<li>The first pattern <code>p1</code> is compared to the value <code>v</code>. If it matches, then the expression <code>e1</code> is evaluated in the current environment extended by the bindings created by the matching of <code>p1</code> to <code>v</code>. This ends the computation and returns the resulting value.</li>
+<li>If the first pattern did not match <code>v</code>, we proceed to try the next pattern, and so on.</li>
+<li>If we arrive at the end and no pattern matched, a runtime error is produced. The typechecker will actually warn you if that is a possibility.</li>
+</ul>
+<p>The typechecking is a little more complicated, so we will omit all the details, but the bottom line is that the expressions <code>e1, e2, e3, ...</code>, must all have the same type. Also the type of <code>e</code> must be consistent with the kinds of types that the patterns expect. The system looks at all the patterns and produces one common type from them, then expects <code>e</code> to have that type.</p>
+<p>Let us look at some examples:</p>
+<pre><code>match e with
+| Some (x, y) -&gt; x + y
+| None -&gt; 0</code></pre>
+<p>Let us think of what type information is contained in the above code:</p>
+<ul>
+<li>Looking the type of the patterns, we see that they are both option type constructors, so we expect <code>e</code> to be of some option type <code>t option</code>.</li>
+<li>Looking at the first pattern we can see that <code>t</code> must in fact be a pair type, so we are looking at a type like <code>(t1 * t2) option</code>.</li>
+<li>Looking at the first expression (<code>x + y</code>) we see that both <code>x</code> and <code>y</code> must be integers, and so the type for <code>e</code> must in fact be <code>(int * int) option</code>.</li>
+<li>Also the result type of the expression must match the types of both <code>x + y</code> and <code>0</code>. These are both integer types, and they match, so that is OK.</li>
+</ul>
+<p>Here are some examples of what would happen for various values of <code>e</code>:</p>
+<ul>
+<li>If <code>e</code> is <code>Some (1, 2)</code>, then the result will be <code>1 + 2 = 3</code>.</li>
+<li>If <code>e</code> is <code>None</code>, then the result will be <code>0</code>.</li>
+<li>If <code>e</code> is <code>(1, 2)</code>, then we get a typechecking error.</li>
+<li>If <code>e</code> is <code>Some 2</code>, then we get a typechecking error.</li>
+</ul>
+<p>As further practice, think through the type considerations in the following code:</p>
+<pre><code>match e with
+| Some (Some x) -&gt; x
+| Some _ -&gt; 1
+| None -&gt; 0</code></pre>
+<p>The importance of pattern-matching will become clear when we combine it with recursion to offer expressive ways of processing functions.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

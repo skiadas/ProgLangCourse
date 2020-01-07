@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>currying</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="currying">Currying</h1>
+<p>Currying is a fundamental concept in functional programming, named in honor of the logician <a href="https://en.wikipedia.org/wiki/Haskell_Curry">Haskell Curry</a>, although it was introduced <a href="https://en.wikipedia.org/wiki/Currying">much earlier</a>.</p>
+<p>Currying has its foundations on the idea that functions can return functions. For instance imagine the following:</p>
+<pre><code>let add x = fun y -&gt; x + y</code></pre>
+<p>So add is a function of one argument, that returns a function of one argument. To call add we could do:</p>
+<pre><code>(add 3) 2               (* becomes 3 + 2 *)</code></pre>
+<p>And in fact function application is left-associative, so we can write this also as:</p>
+<pre><code>add 3 2</code></pre>
+<p>From a different point of view, we can effectively think of <code>add</code> as a function of two arguments, <code>x</code> and <code>y</code>. Except that we are effectively providing these arguments <em>one at a time</em>, first <code>x</code> and then <code>y</code>. We can in fact stop after the “first” argument:</p>
+<pre><code>add 3</code></pre>
+<p>and what we get back is a function, that expects the “second” argument, <code>y</code>. We will call these <em>curried</em> functions.</p>
+<p>OCAML offers us a convenient syntactic sugar for curried functions, allowing us to write our example of <code>add</code> above as:</p>
+<pre><code>let add x y = x + y</code></pre>
+<p>Technically the idea of currying is the process of taking a function that takes two or more arguments as a tuple, and producing the function that instead takes them one after the other. So for example going from the first function to the second:</p>
+<pre><code>let add (x, y) = x + y
+let addc x y = x + y</code></pre>
+<p>In fact we can represent this transformation as a function, if we know the number of arguments involved, and there are many ways to write it:</p>
+<pre><code>let curry f = fun x y -&gt; f (x, y)
+let curry f = fun x -&gt; fun y -&gt; f (x, y)
+let curry f = fun y -&gt; f (x, y)
+let curry f x y = f (x, y)</code></pre>
+<p>Practice 1: What is the type of the <code>curry</code> function?</p>
+<p>Practice 2: Write an <code>uncurry</code> function after first describing its type.</p>
+<h2 id="functions-of-multiple-arguments-in-ocaml">Functions of multiple arguments in OCAML</h2>
+<p>Essentially we now know almost everything about functions in OCAML:</p>
+<ol type="1">
+<li>Every function in OCAML takes exactly one argument. This will make it easy to implement the interpreter in the future, it matches the point of view taken by lambda calculus, and it is wonderfully simple and elegant.</li>
+<li>Having that argument be of type <code>unit</code>, with its unique value <code>()</code>, provides a way to have functions that essentially “take no argument” without having to code them in any special way.</li>
+<li>Having that argument be of tuple type offers us one way to write a “function of multiple arguments”, by having as its one argument a tuple <code>(x, y, z)</code> and using pattern-matching. In the future however we will be avoiding this practice, in favor of curried functions. Tuples will be used mainly when a function needs to return more than one value.</li>
+<li>Having functions (and closures) as possible return values allows us to have multiple arguments in the curried sense described above, where we provide those arguments one at a time and each time we get as a return value a function. It is the fact that we have closures that makes this possible, as the returned values remember the values of the parameters to the function call that produced them.</li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

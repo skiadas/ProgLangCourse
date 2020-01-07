@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>references</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="references">References</h1>
+<p>So far we have examined functional programming concepts and we have shied away from the important topic of mutation, a topic familiar to those from programming languages like Java and C.</p>
+<h2 id="structural-mutation-and-variable-mutation">Structural Mutation and Variable Mutation</h2>
+<h3 id="variable-mutation">Variable Mutation</h3>
+<p>Mutation simply means “changing the value of something”. For instance if we have code like the following in Python:</p>
+<pre class="python"><code>i = 0
+j = i             # i = 0     j = 0
+def getsum ():
+    return i + j
+
+print(getsum())
+i = i + 1         # i = 1     j = 0
+print(getsum())
+j = j + 4         # i = 1     j = 4
+print(getsum())</code></pre>
+<p>We see the value of <code>i</code> and <code>j</code> changes as the program evolves. They are still the same <code>i</code>, <code>j</code> variables, and the function <code>getsum</code> uses them. But the result of calling <code>getsum</code> depends on <em>when</em> we call <code>getsum</code>; it will use whatever value those two variables have at the time. This is known as <strong>variable mutation</strong>, as opposed to the <em>structural mutation</em> we will see in a little while.</p>
+<p>Before we do that, it is important to talk about <strong>aliasing</strong>. Note the line <code>j = i</code>, where we have told Python to set a variable equal to another variable. Every time we do this we have to ask if we have created an “alias”. Is the variable <code>j</code> from this point forward interchangeable with the variable <code>i</code>? Are they both from now on pointing to the “same value”? The answer is of course no; we can increment <code>i</code> without a corresponding change in <code>j</code>. This is in general the case with variable mutation.</p>
+<h3 id="structural-mutation">Structural Mutation</h3>
+<p>There is a slightly different kind of mutation, called structural mutation, that we are all mostly familiar with from most object-oriented programming languages. In Python a simple example of it might look as follows:</p>
+<pre class="python"><code>class Counter():
+   def __init__(self):
+      self.i = 0
+
+   def incr(self):
+      self.i += 1
+      return self.i
+
+x = Counter()           # x.i = 0
+y = x                   # literally the same &quot;object&quot; as x
+print(x.incr())         # Increments both x and y
+print(y.incr())         # Increments both x and y</code></pre>
+<p>In this example, we have an “object” that contains the value in its property <code>i</code>. And we can change the value that is stored there. At the same time, another variable <code>y</code> is bound to that same object <code>x</code>, and these two are now <strong>aliased</strong>: A change in the one object is reflected in the “other” (though there really isn’t another object, they are the same object).</p>
+<p>Those familiar with pointers know that pointers lie at the heart of the idea of aliasing. For example we could do the following in C:</p>
+<pre class="c"><code>#include &lt;stdio.h&gt;
+int i = 0;
+int *p1, p2, p3;
+
+int main() {
+   int *p1 = &amp;i;
+   int *p2 = p1;   // p1, p2 both point to the same memory, where i is stored
+   int j = *p1;
+   printf(&quot;%i %i %i %i\n&quot;, i, j, *p1, *p2);
+   i = i + 1;
+   printf(&quot;%i %i %i %i\n&quot;, i, j, *p1, *p2);
+   *p1 += 1;
+   printf(&quot;%i %i %i %i\n&quot;, i, j, *p1, *p2);
+   return 0;
+}</code></pre>
+<p>In this example we have created the two pointers that both point to the same point in memory. When we later change the value of that point in memory, that information is reflected in all pointers that still point to that same location.</p>
+<p>This is called <strong>structural mutation</strong>, because we are not really changing the value of the pointers, but instead we make adjustments to the structure the pointers are pointing to.</p>
+<p>The essential point is that these are two subtly different kinds of mutation, and it is important to identify the difference between them. Languages like OCAML allow the latter, but not the former. We will see now how.</p>
+<h2 id="references-1">References</h2>
+<p>Essentially references in OCAML are a bit like pointers, only safer and with limited power. If you think about it, the main things we need from pointers are the following:</p>
+<ol type="1">
+<li>A way to create a pointer to some new memory location.</li>
+<li>A way to read the value that is stored in that location.</li>
+<li>A way to change the value that is stored in that location.</li>
+</ol>
+<p>Any implementation of a pointer-like mechanic must provide these three features. In a statically typed language we need some new types in addition to all that. So let us get started:</p>
+<ul>
+<li>We have a new kind of value, <code>ref v</code> where <code>v</code> is some other value. This is meant to be sort of like a pointer to the value <code>v</code>.</li>
+<li>We have a new type <code>'a ref</code> for a “reference to a value of type <code>'a</code>”.</li>
+<li>We have an assignment function <code>r := e</code> which has type <code>'a ref * 'a -&gt; unit</code>. It is evaluated by evaluating the reference <code>r</code> first, then evaluating the expression <code>e</code> to a value, then storing that value in the reference.</li>
+<li>We have a dereference function <code>!r</code> which has type <code>'a ref -&gt; 'a</code>. It is evaluated by first evaluating <code>r</code> to a reference, then getting the value that is stored in there.</li>
+<li>Lastly, in order for these to have any practical significance, we need a way to have expressions one after the other, in a sequencing style <code>e1;e2</code>. This sequence expression evaluates <code>e1</code> first, then discards the result and evaluates <code>e2</code>.</li>
+</ul>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

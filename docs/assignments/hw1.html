@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>hw1</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="assignment-1">Assignment 1</h1>
+<p>Introduction to OCAML.</p>
+<p>You may need to refer to the <a href="http://caml.inria.fr/pub/docs/manual-ocaml/libref/Pervasives.html">Pervasives module</a> documentation occasionally. All the functions there are available in OCAML by default. You are NOT allowed to use everything that’s there unless we have talked about it or unless the assignment question asks you to look it up.</p>
+<p>In this assignment you are asked to implement 9 functions. Each function is worth one point, and the assignment has an extra point for “style”, for a total of 10 points.</p>
+<p>The assignment expects you to use GitHub and Git to keep track of your work. The first couple of steps below will get you set up.</p>
+<ol type="1">
+<li>First off, if you do not have a GitHub account yet, go to <a href="https://github.com/">https://github.com/</a> and set one up.</li>
+<li>Next you need to “fork” the repository that has the assignments. Open your browser to <a href="https://github.com/skiadas/ProgLangAssignments">https://github.com/skiadas/ProgLangAssignments</a> and click on the “Fork” icon near the top left.</li>
+<li>After a while, this will have created a “repository” under your GitHub account. You should be able to see it by going to <a href="https://github.com/yourAccountHere/ProgLangAssignments">https://github.com/yourAccountHere/ProgLangAssignments</a> where you use your account name instead of <code>yourAccountHere</code>.</li>
+<li>Next, you will “clone” your GitHub repository to your local computer.
+<ul>
+<li>From your terminal window, navigate to the directory you want to use as your workspace for the assignments. The next steps will create a new directory in there, so you do not need to create a new directory, just go to the location you want for that directory.</li>
+<li>From your project’s webpage, find the textbox near the middle that says something like <code>https://github.com/skiadas/ProgLangAssignments.git</code>. It will have “HTTP” to its left. Click in that textbox and copy that whole text to the clipboard.</li>
+<li>Back at your terminal, type: <code>git clone &lt;pasteThatLinkHere&gt;</code>.</li>
+<li>This should have created a new directory called “ProgLangAssignments” and you will find some homework files in it.</li>
+<li>You probably will want to open the whole directory in SublimeText. After you change directory to go into that directory, you can type <code>subl .</code> to do that.</li>
+</ul></li>
+<li>While in this directory, follow the instructions at <a href="https://help.github.com/articles/setting-your-username-in-git/">https://help.github.com/articles/setting-your-username-in-git/</a> and <a href="https://help.github.com/articles/setting-your-email-in-git/">https://help.github.com/articles/setting-your-email-in-git/</a> to set up username and email. These will be used when you “make commits”.</li>
+<li>For now we will not do much more with Git and GitHub. Follow the remaining instructions for working on your project, and when you are done run the following from the terminal:
+<ul>
+<li><code>git add .</code> This “prepares” your changes for committing.</li>
+<li><code>git status</code> This should show you two files ready for commit.</li>
+<li><code>git commit -m "My first commit!"</code> This creates a commit</li>
+<li><code>git push</code> This should upload your changes to GitHub.</li>
+</ul>
+If you now go back to your project’s page on GitHub, it should show you the commit you created. Email me the link to this webpage, and this will count as your submission.</li>
+<li>You will find two files in this directory:
+<ul>
+<li><code>assignment1sub.ml</code> This is the main submission file. It is where you will add your code for the various functions that you need to write. There are comments in that file to show you where to add your function definitions, and to tell you what your functions should do.</li>
+<li><code>assignment1tests.ml</code> This is a file with a small number of tests, and you should add plenty tests your own. “Tests” are arranged as lines <code>let ... = e</code> where <code>e</code> is a an expression that is meant to evaluate to a boolean indicating if the tests succeeded or not.</li>
+</ul></li>
+<li>To “run” your tests, start an OCAML session in the terminal via <code>utop</code>, do:</li>
+</ol>
+<pre><code>#use &quot;assignment1sub.ml&quot;;;
+#use &quot;assignment1tests.ml&quot;;;</code></pre>
+<p>You should be able to use auto-completion. - The first <code>#use</code> should print for you the type signatures for all the functions you had to write. Make sure this matches the signatures described in the code file. - The second <code>#use</code> should print a bunch of <code>true</code> values out, for all the existing tests along with all the tests you added.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

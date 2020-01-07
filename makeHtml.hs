@@ -6,7 +6,7 @@ import Text.Pandoc.JSON
 
 changeLinkInline :: Inline -> Inline
 changeLinkInline (Str "ANSWERSPACE") = Space
-changeLinkInline (Link xs (t, n)) = Link xs (fixLink t, fixLink n)
+changeLinkInline (Link attr xs (t, n)) = Link attr xs (fixLink t, fixLink n)
 changeLinkInline x = x
 
 isMarkdown :: String -> Bool
@@ -22,7 +22,7 @@ changeLinks = walk changeLinkInline
 makeLink :: String -> Inline
 makeLink num   = Span attrs link
    where attrs = ("", ["small"], [])
-         link  = [Space, Str "(", Link [Str "pdf"] (num ++ ".pdf", num), Str ")"]
+         link  = [Space, Str "(", Link attrs [Str "pdf"] (num ++ ".pdf", num), Str ")"]
 
 addLink :: [Inline] -> [Inline]
 addLink [Str num] | all isNumber num = [Str num, makeLink num]
@@ -35,4 +35,4 @@ makePDFLink (Header 1 attrs xs) = Header 1 attrs $ addLink xs
 makePDFLink x = x
 
 main :: IO ()
-main = toJSONFilter (changeLinks . (walk makePDFLink))
+main = toJSONFilter changeLinks

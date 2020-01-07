@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>delayed_eval</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="delayed-evaluation">Delayed Evaluation</h1>
+<p>Delayed, or Lazy, evaluation is the evaluation of the expression only when needed. It is often considered in relation to the arguments to a function call, the idea being that the arguments would not be evaluated until their values are needed. Some languages like Haskell promote this idea to every location, even allowing infinitely long lists that are only evaluated up to where they are needed.</p>
+<p>There are two important features needed for delayed evaluation:</p>
+<ul>
+<li>The expression must not be evaluated until it is needed.</li>
+<li>The expression must only be evaluated once. So the value must be stored upon first evaluation and recovered each time as requested.</li>
+<li>If the expression raised an exception when called, then it must do so on any future invocations as well.</li>
+</ul>
+<p>In OCAML we can “emulate” this behavior using variant types, references and mutation, and the fact that expression are regular values, as follows:</p>
+<ul>
+<li>A type <code>'a result</code> holds in a type variant either the unevaluated expression, the resulting value or the raised exception, whichever occured.</li>
+<li>A type <code>'a lazy</code> holds a reference to a value of type <code>'a result</code>.</li>
+<li>A function <code>delay</code> takes as input a “thunk” and stores it in the reference.</li>
+<li>A function <code>force</code> takes as input a <code>'a lazy</code> value, and if it is still unevaluated then it evaluates it and adjusts the reference accordingly.</li>
+</ul>
+<p>Here’s how the whole code might look like:</p>
+<pre class="ocaml"><code>type &#39;a result = Delayed of unit -&gt; &#39;a | Evaled of &#39;a | Raised of exn
+type &#39;a lazy = &#39;a result ref
+
+(* val delay : (unit -&gt; &#39;a) -&gt; &#39;a lazy *)
+let delay th = ref (Delayed th)
+
+(*val force : &#39;a lazy -&gt; &#39;a *)
+let force r = match !r with
+  | Evaled v -&gt; v
+  | Raised ex -&gt; raise ex
+  | Delayed th -&gt; try let v = th ()
+                      in (r := Evaled v; v)
+                  with ex -&gt; (r := Raised ex; raise ex)</code></pre>
+<p>Every time we want to delay an evaluation, and express the fact, we wrap it using the <code>delay</code> function. When we want to get the value out, we use <code>force</code>.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

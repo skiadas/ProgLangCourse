@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>interpret_oop</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="interpreting-objects-and-classes">Interpreting objects and classes</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Building on our work with an interpreter that allows mutation, we will now further discuss how to implement objects and classes in it. Let us think of the main ingredients:</p>
+<ul>
+<li>There are two new values: classes and objects</li>
+<li>A class contains a constructor/initializer, a list of symbols for the field names and methods. Classes don’t need their own “names” as they will be regular values.</li>
+<li>A class can have an optional superclass, which must be an expression that evaluates to a class. We can thus have inheritance. If the “superclass” location evaluates to something other than a class, then we simply assume our class doesn’t have a superclass.</li>
+<li>Objects are created by calling the constructor/initializer. This is done by using a <code>new</code> construct. For simplicity, the constructors take no arguments. It is up to the constructors to decide on initial values.</li>
+<li>When the constructor is called, a new object is created with all the fields assigned memory locations but without any values. The constructor is then called with that object as <code>self</code>. If there is a superclass, its constructor is called first.</li>
+<li>You cannot add new fields to an object, nor delete fields.</li>
+<li>All superclasses of the object have access to its fields. This is technically not ideal, but it will make our implementation simpler.</li>
+<li>The result of a call to <code>new</code> is the object that was created, regardless of what the constructor returns. This is a design choice to some extent.</li>
+<li>We can call object methods by using dynamic dispatch.</li>
+<li>Methods are stored as functions, but their call/dispatch semantics is slightly different.</li>
+<li>We assume that functions take only one argument.</li>
+<li>The object’s fields are accessed through get/set methods, analogous to <code>o.x</code> and <code>o.x = v</code>.</li>
+<li>The keyword <code>self</code> is used to refer to the object from within a method call. We have to decide how to make that happen:
+<ul>
+<li>One approach is to simply add the symbol <code>'self</code> in the environment at appropriate times. There are two problems with this. The one is that one could shadow the object by directly using <code>'self</code> as a variable. The other more important problem is that the environment binds symbols to locations. This would mean that every time we try to implement method dispatch, we have the object value and must create a new memory location for it for the purposes of the call.</li>
+<li>Another approach is to add another parameter to the <code>interp</code> call, is the “current object”. Then we can use a keyword <code>self</code> that simply returns that object. This is the approach we take. If there is no “current object” then the object parameter can contain <code>#f</code> or any other ‘meaningless’ statement.</li>
+</ul></li>
+</ul>
+<p>Here’s how the main structs for something like this might look like:</p>
+<pre class="racket"><code>;; New language construts
+(struct classC (super init fnames mnames methods))
+(struct newC (class))
+(struct self ())
+(struct disp (obj s arg))  ;; method call/dispatch. arg is an expression
+(struct getC (obj s))     ;; returns the value in field s
+(struct setC (obj s e))   ;; sets the value in field s to the result of interp e
+;; New values
+(struct classV (super init fnames mnames methods))
+(struct objV (class fields locs) #:transparent)</code></pre>
+<p>Let us consider implementation. First, because we will encounter the situation of having a racket list of expressions that need to be evaluated, each passing its store to the next, we should create a helper function to do that:</p>
+<pre><code>(define (interp-list o env sto lst)
+  (if (null? lst)
+      (res null sto)
+      (let* ([r (interp o env sto (car lst))]
+             [r-rest (interp-list o env (res-sto r) (cdr lst))])
+        (res (cons (res-v r)
+                   (res-v r-rest))
+             (res-sto r-rest)))))</code></pre>
+<h2 id="classes">Classes</h2>
+<p>Evaluating a <code>classC</code> is simple, but there’s plenty of information stored there:</p>
+<ul>
+<li>A <code>classC</code> will evaluate to a <code>classV</code> once it makes sure all components are in place.</li>
+<li>We must evaluate <code>super</code> to a value.</li>
+<li><code>fnames</code> must be a list of symbols with no duplicates (but we won’t check for duplicates). Only methods of the class can access the field names of the class. For example methods of a subclass can’t directly access a field defined in the superclass. Implementing this part isn’t easy.</li>
+<li><code>init</code> should evaluate to a closure.</li>
+<li><code>mnames</code> is a list of method names. It should have the same length as <code>methods</code>.</li>
+<li><code>methods</code> should be a list of expressions, where the expressions evaluate to closures.</li>
+<li>As each of these is evaluated, we must maintain the store and propagate it.</li>
+</ul>
+<pre class="racket"><code>;; (classC super init fnames mnames methods)
+    [(classC? e)
+     (let* ([r-super (interp o env sto (classC-super e))]
+            [super (res-v r-super)]
+            [r-init (interp o env (res-sto r-super) (classC-init e))]
+            [init (res-v r-init)]
+            [r-methods (interp-list o env (res-sto r-init) (classC-methods e))]
+            [methods (res-v r-methods)]
+            [fnames (classC-fnames e)]
+            [mnames (classC-mnames e)])
+       (cond [(not (andmap symbol? fnames))
+              (error &quot;field names must be symbols&quot;)]
+             [(not (andmap symbol? mnames))
+              (error &quot;method names must be symbols&quot;)]
+             [(not (closV? init))
+              (error &quot;initializer must be a function&quot;)]
+             [(not (andmap closV? methods))
+              (error &quot;class methods must be functions&quot;)]
+             [else
+              (res (classV super init fnames mnames methods)
+                   (res-sto r-methods))]))]</code></pre>
+<h2 id="new-objects">New objects</h2>
+<p>In order to implement <code>new</code>, we must do the following:</p>
+<ul>
+<li>We must get hold of the chain of superclasses of the object.</li>
+<li>We must extract the field symbols from all superclasses, and form a single list of symbols for the object.</li>
+<li>We then build a basic object. We must allocate memory locations for all fields.</li>
+<li>We call all initializers in order, starting from the super-most one. The last initializer to run is the one corresponding to the object’s class.</li>
+<li>We return the object.</li>
+</ul>
+<p>Let us start with some helper methods. Here’s a method that forms the superclass list from a base class:</p>
+<pre class="racket"><code>(define (get-class-list cls)
+  (letrec ([extend
+            (lambda (classes)
+              (let ([next (classV-super (car classes))])
+                (if (classV? next)
+                    (extend (cons next classes))
+                    classes)))])
+    (extend (list cls))))</code></pre>
+<p>Then a method that is given an class for an object, and forms a list of the unique symbols from the object’s superclasses. In theory we could do this once and store it in classV. We also need a method <code>uniq</code> to remove duplicates.</p>
+<pre class="racket"><code>(define (uniq xs seen)
+  (cond [(null? xs) seen]
+        [(memq? (car xs) seen)
+         (uniq (cdr xs) seen)]
+        [else (uniq (cdr xs) (cons (car xs) seen))]))
+
+(define (get-symbols cls)
+  (let* ([classes (get-class-list cls)]
+         [symbols (flatten (map classV-fnames classes))])
+    (uniq symbols null)))
+
+(define (get-inits cls)
+  (map classV-init (get-class-list cls)))</code></pre>
+<p>We’ll need a function to call all initializers on an object, and return the updated store. Each initializer needs to be called in its own environment, stored in its closure. There are no arguments so we simply need to reach into the function body and evaluate that.</p>
+<pre class="racket"><code>(define (call-inits obj sto inits)
+  (if (null? inits)
+      sto
+      (let* ([init (car inits)]
+             [cl-env (closV-env init)]
+             [body (fun-body (closV-fun init))]
+             [new-sto (res-sto (interp obj cl-env sto body))])
+        (call-inits obj new-sto (cdr inits)))))</code></pre>
+<p>Now we are ready to implement <code>new</code>:</p>
+<ul>
+<li>It must look up the expression at the class position, and make sure it is a class.</li>
+<li>We need to then create a new object value, and create locations for all the fields.</li>
+<li>We then call the class initializers with the correct <code>self</code> object.</li>
+<li>Finally we return the object.</li>
+</ul>
+<pre class="racket"><code>;; (newC class)
+    [(newC? e)
+     (let* ([r-cls (interp o env sto (newC-class e))]
+            [cls (res-v r-cls)])
+       (if (classV? cls)
+           (let* ([fields (get-symbols cls)]
+                  [locs (map (lambda (t) (new-loc)) fields)]
+                  [obj (objV cls fields locs)]
+                  [rinit (call-inits obj
+                                     (res-sto r-cls)
+                                     (get-inits cls))])
+             (res obj (res-sto rinit)))
+           (error &quot;new needs a class&quot;)))]</code></pre>
+<h2 id="method-dispatch">Method Dispatch</h2>
+<p>Next up we need to implement method dispatch. We need to:</p>
+<ul>
+<li>Evaluate in the current object/environment/store the value that is in the object place.</li>
+<li>Evaluate the argument to a value in the current object/environment and the updated store.</li>
+<li>Search through the superclass hierarchy for the implementation of a method with symbol <code>s</code>.</li>
+<li>Perform the call with the correct object/enviroment.</li>
+</ul>
+<pre class="racket"><code>;; (disp obj s arg)
+    [(disp? e)
+     (let* ([robj (interp o env sto (disp-obj e))]
+        [obj (res-v robj)]
+        [rv (interp o env (res-sto robj) (disp-arg e))]
+        [v (res-v rv)])
+       (if (objV? obj)
+           (call-method (find-method (disp-s e) obj) obj (res-sto rv) v)
+           (error &quot;cannot dispatch on non-object&quot;)))]</code></pre>
+<p>We need to implement <code>call-method</code> and <code>find-method</code>. We start with <code>call-method</code>. It is given a function value, an object to use as self, a store, and an argument value. It does not need an environment as it will use the function closure’s environment. It <em>does</em> need to create a new memory location to store the argument.</p>
+<p>We would normally check that the method we are given is actually a closure. But we have ensured that when we created the classes. So we would never dispatch on a non-method.</p>
+<pre class="racket"><code>(define (call-method fv obj sto argv)
+  (let ([f (closV-f fv)]
+        [loc (new-loc)])
+    (interp obj
+            (bind (fun-arg f) loc (closV-env fv))
+            (store loc argv sto)
+            (fun-body f))))</code></pre>
+<p>Now <code>find-method</code>, the main method that implements the dynamic dispatch. It is given a symbol and an object, and it must locate the appropriate method to call by going up the chain. It uses a helper method, that takes a list of names and methods and if it finds the symbol it returns the corresponding method.</p>
+<pre class="racket"><code>(define (search-in-list s mnames methods)
+  (cond [(null? mnames) #f]
+        [(eq? s (car mnames)) (car methods)]
+        [else (search-in-list s (cdr mnames) (cdr methods))]))
+
+(define (check-in-class s cls)
+  (let* ([method
+          (search-in-list s
+                          (classV-mnames cls)
+                          (classV-methods cls))])
+    (cond [method method]
+          [(classV? (classV-super cls))
+           (check-in-class s (classV-super cls))]
+          [else (error &quot;Unknown method&quot;)])))
+
+(define (find-method s obj)
+  (check-in-class s (objV-class obj)))</code></pre>
+<h2 id="getters-and-setters">Getters and Setters</h2>
+<p>Lastly, we must implement <code>getC/setC</code> functionality. We could possibly generalize it in terms of the concept of “l-values”, but we’ll keep it simple.</p>
+<p>Interpreting the getter, which is given an object expression and symbol must:</p>
+<ul>
+<li>Evaluate the object expression to a value.</li>
+<li>Ensure the value is an object.</li>
+<li>Check that the object has the corresponding field and find the location it points to.</li>
+<li>Fetch the value at that location.</li>
+</ul>
+<p>We will reuse <code>search-in-list</code> from earlier. We will also use a helper function <code>get-field-loc</code> that gets the location of a field from the object.</p>
+<pre class="racket"><code>(define (get-field-loc s obj)
+  (let* ([fields (objV-fields obj)]
+         [locs (objV-locs obj)]
+         [loc (search-in-list s fields locs)])
+   (or loc (error &quot;Object does not contain field&quot;))))</code></pre>
+<p>Now for <code>getC</code>:</p>
+<pre class="racket"><code>;; (getC obj s)
+[(getC? e)
+ (let* ([robj (interp o env sto (getC-obj e))]
+        [obj (res-v robj)])
+   (if (objV? obj)
+           (res (fetch (get-field-loc (getC-s e) obj)
+                       (res-sto robj))
+                (res-sto robj))
+       (error &quot;Cannot get field of non-object&quot;)))]</code></pre>
+<p>Similarly for <code>setC</code>, with extra steps for evaluating the value.</p>
+<pre class="racket"><code>;; (setC obj s e)
+[(setC? e)
+ (let* ([robj (interp o env sto (setC-obj e))]
+        [obj (res-v robj)]
+        [rv (interp o env (res-sto robj) (setC-e e))]
+        [v (res-v rv)])
+   (if (objV? obj)
+       (let ([loc (get-field-loc (setC-s e) obj)])
+         (res v (store loc v (res-sto rv))))
+       (error &quot;Cannot set field of non-object&quot;)))]</code></pre>
+<p>This essentially completes our basic implementation of classes and objects.</p>
+<p>Here is an example of a program written in this language. It creates a point class with x and y fields, then a subclass for 3-dimensional points with an extra z field. Also a “length squared” method for computing the squared distance from the origin.</p>
+<pre class="racket"><code>(define prog1
+  (letC &#39;Point
+        (classC
+         (voidC)
+         (fun #f #f
+              (seq (setC (self) &#39;x (num 0))
+                   (setC (self) &#39;y (num 0))))
+         (list &#39;x &#39;y)
+         (list &#39;getX &#39;getY &#39;setX &#39;setY &#39;lensq)
+         (list (fun #f #f (getC (self) &#39;x))
+               (fun #f #f (getC (self) &#39;y))
+               (fun #f &#39;newx (setC (self) &#39;x (var &#39;newx)))
+               (fun #f &#39;newy (setC (self) &#39;y (var &#39;newy)))
+               (fun #f #f
+                    (arith +
+                           (arith *
+                                  (disp (self) &#39;getX (voidC))
+                                  (disp (self) &#39;getX (voidC)))
+                           (arith *
+                                  (disp (self) &#39;getY (voidC))
+                                  (disp (self) &#39;getY (voidC)))))))
+        (letC &#39;Point3
+              (classC
+               (var &#39;Point)
+               (fun #f #f
+                    (setC (self) &#39;z (num 0)))
+               (list &#39;z)
+               (list &#39;getZ &#39;setZ &#39;lensq)
+               (list (fun #f #f (getC (self) &#39;z))
+                     (fun #f &#39;newz (setC (self) &#39;z (var &#39;newz)))
+                     (fun #f #f
+                          (arith +
+                                 (arith +
+                                        (arith *
+                                               (disp (self) &#39;getX (voidC))
+                                               (disp (self) &#39;getX (voidC)))
+                                        (arith *
+                                               (disp (self) &#39;getY (voidC))
+                                               (disp (self) &#39;getY (voidC))))
+                                 (arith *
+                                        (disp (self) &#39;getZ (voidC))
+                                        (disp (self) &#39;getZ (voidC)))))))
+              (letC &#39;p (newC (var &#39;Point3))
+                    (seq (disp (var &#39;p) &#39;setX (num 2))
+                         (seq (disp (var &#39;p) &#39;setZ (num 4))
+                              (disp (var &#39;p) &#39;lensq (voidC))))))))</code></pre>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

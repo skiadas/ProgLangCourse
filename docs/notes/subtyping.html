@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>subtyping</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="subtyping">Subtyping</h1>
+<h2 id="basics-of-subtyping">Basics of subtyping</h2>
+<p>The concept of subtyping is particularly critical in most object-oriented programming languages, but it is also useful in other settings.</p>
+<blockquote>
+<p>We say that a type <code>t1</code> is a subtype of another type <code>t2</code>, and we write <code>t1 &lt;: t2</code>, if a value of type <code>t1</code> can be used anywhere where a value of type <code>t2</code> is expected.</p>
+</blockquote>
+<p>A good example was our discussion of 2-dimensional points vs 3-dimensional points. Any operation that expects a 2-dimensional point will make use of the two coordinates <code>x</code> and <code>y</code>. But a 3-dimensional point also has those two coordinates. So should we allow these operations to be performed on 3-dimensional points as well? i.e. is <code>point3d</code> a subtype of <code>point2d</code>? This is a crucial question for object-oriented languages: Classes are often identified with types in that case, and a subclass relation must also correspond to a subtype relation, as the main point of subclasses is that their objects can be used wherever objects of the superclass could.</p>
+<p>The above example points out that records are at a relevant topic of discussion for subtyping. We can consider a record type to be a subtype of another if:</p>
+<ul>
+<li>It has all the same fields with the same types, but possibly has extra fields. This is called <em>width subtyping</em>.</li>
+<li>It has all the same fields, but possibly with subtypes of the corresponding types on each field. This is called <em>depth subtyping</em>.</li>
+</ul>
+<p>It is an important question to decide what kinds of rules subtyping should obey. We can list some of these rules:</p>
+<ul>
+<li>Every type should be its own subtype: <code>t &lt;: t</code> (reflexive property)</li>
+<li>A subtype of a type’s subtype is also a subtype of the larger type (transitivity): If <code>t1 &lt;: t2</code> and <code>t2 &lt;: t3</code> then <code>t1 &lt;: t3</code>.</li>
+<li>Width subtyping should be valid: <code>{a: t1, b: t2, c: t3} &lt;: {a: t1, b: t2}</code></li>
+<li>Permutation subtyping: The order of fields in width subtyping should not matter (or in other words, rearranging the order of the fields produces a supertype of our type).</li>
+</ul>
+<h2 id="depth-subtyping-and-mutation">Depth subtyping and mutation</h2>
+<p>The presence of mutation poses some interesting problems with depth subtyping. We might want a rule that says:</p>
+<ul>
+<li>If <code>t1 &lt;: t2</code>, then <code>{a: t1, ...} &lt;: {a: t2, ...}</code> where all other fields are kept the same.</li>
+</ul>
+<p>But if we are allowed to mutate a record’s fields, we might have the following series of operations:</p>
+<pre><code>let change_center (c: {center: {x: x}, r: r}) =
+  c.center := {x: 0};;
+
+let sph = {center= { x= 0, y= 0}, r= 3};;
+change_center sph;;
+sph.center.y;;       &lt;---------- Will get an error!</code></pre>
+<p>This is a series of operations the typechecker should allow:</p>
+<ul>
+<li><code>change_center</code> takes as input a value of type <code>{center: {x: int}, r: int}</code>. It replaces the value of <code>center</code> with a value of type <code>{x: int}</code>.</li>
+<li><code>sph</code> starts off as a value of type <code>{center: {x: int, y: int}, r: int}</code>.</li>
+<li>If depth subtyping were to be a valid rule, then <code>sph</code> would be a valid input to the <code>change_center</code> function.</li>
+<li>Since <code>sph</code> has type <code>{center: {x: int, y: int}, r: int}</code>, we should be allowed to access <code>sph.center.y</code>.</li>
+</ul>
+<p>And yet at the end of the day we end up accessing an entry that is not there! Our type system is no longer sound! This is the kind of error it was supposed to protect us from. So we cannot have mutable record fields and depth subtyping in a sound type system.</p>
+<h2 id="arrays-and-subtyping">Arrays and subtyping</h2>
+<p>A similar problem arises in the use of (mutable) arrays in languages like Java. Consider for example the following code, borrowed from Dan Grossman’s course:</p>
+<pre class="java"><code>class Point { ... } // has fields double x, y
+class ColorPoint extends Point { ... } // adds field String color
+...
+void m1(Point[] pt_arr) {
+  pt_arr[0] = new Point(3,4);
+}
+
+String m2(int x) {
+  ColorPoint[] cpt_arr = new ColorPoint[x];
+  for(int i=0; i &lt; x; i++)
+     cpt_arr[i] = new ColorPoint(0,0,&quot;green&quot;);
+  m1(cpt_arr);
+  return cpt_arr[0].color;
+}</code></pre>
+<p>Let’s describe what is going on:</p>
+<ul>
+<li>We have a class <code>Point</code>, and subclass <code>ColorPoint</code>. This also establishes a subtype relation.</li>
+<li>We have a function <code>m1</code> that takes an array of <code>Point</code> objects, and changes the 0-th entry in that array to a new Point.</li>
+<li>We have a second function <code>m2</code> that takes an integer, then creates an array of that many <code>ColorPoint</code> instances.</li>
+<li>This array can be given as input to the first function <code>m1</code> that was expecting a <code>Point</code> array, as <code>ColorPoint</code> is a subtype of <code>Point</code>. This is essentially a form of depth subtyping.</li>
+<li>That function <code>m1</code> changes the first entry in the array (to an instance of <code>Point</code>).</li>
+<li>We then try to access the color field of the first entry in the array. At this point that entry is an instance of <code>Point</code>, not <code>ColorPoint</code>, so we would get an error.</li>
+</ul>
+<p>Clearly something went very wrong. The question is what, and how to prevent it. What should we “fix”?</p>
+<p>Java’s approach is as follows: When <code>m1</code> runs, even though on a static typing level it expected a <code>Point</code> array, it has runtime information that it is indeed a <code>ColorPoint</code> array. So when <code>m1</code> tries to put a <code>Point</code> instance in the first entry, there will be a runtime exception thrown because <code>Point</code> is not a subtype of <code>ColorPoint</code> and the array is actually a <code>ColorPoint</code> array.</p>
+<p>So in essence, in order to allow both depth subtyping in the form of arrays and mutation, Java is required to insert some runtime checks instead of static checks to ensure that when a value is mutated then a value of the correct runtime “type” is inserted. But it does mean that our static type system is catching fewer errors.</p>
+<p>If we have time we will discuss <em>bounded polymorphism</em>, which affords a way to control such problems at the static level.</p>
+<h2 id="function-subtyping">Function subtyping</h2>
+<p>In this section we address a simple question: When is a function type <code>T1 -&gt; S1</code> a subtype of another function type <code>T2 -&gt; S2</code>?</p>
+<p>For this we apply the essence of subtyping: We should be able to use the function <code>f</code> of type <code>T1 -&gt; S1</code> anywhere where a function of type <code>T2 -&gt; S2</code> is expected. Let us see what this means:</p>
+<ul>
+<li>We should be able to think of <code>f</code> as a function of type <code>T2 -&gt; S2</code>.</li>
+<li>So we must be able to call it with an input of type <code>T2</code>. But since <code>f</code> can only handle inputs of type <code>T1</code>, it must be the case that <code>T2 &lt;: T1</code>.</li>
+<li>The result of such a call would be of type <code>S1</code>. But we must be able to think of it as a result of type <code>S2</code>. So it must be the case that <code>S1 &lt;: S2</code>.</li>
+</ul>
+<p>So we have:</p>
+<blockquote>
+<p>We have the function subtype relation <code>(T1 -&gt; S1) &lt;: (T2 -&gt; S2)</code> if and only if <code>T2 &lt;: T1</code> and <code>S1 &lt;: S2</code>.</p>
+</blockquote>
+<p>We say that function types are <strong>covariant</strong> in the return type but <strong>contravariant</strong> in the argument type.</p>
+<h2 id="generics-plus-subtyping-the-need-for-bounded-polymorphism">Generics plus subtyping: The need for bounded polymorphism</h2>
+<p>Both generics (polymorphic types) and subtyping are desirable features, and while including them both in a language design is doable, it presents some questions, especially in relation to mutation.</p>
+<p>As an example, suppose we have a structure for mutable lists, <code>List&lt;T&gt;</code>. And suppose we have two types, <code>ColorPoint &lt;: Point</code>. Then we would like to write a function that “filters” those points that are within say a given distance from the origin. So a function:</p>
+<pre><code>closeEnough: List&lt;Point&gt; -&gt; List&lt;Point&gt;</code></pre>
+<p>Suppose further that we have a list of <code>ColorPoint</code>s:</p>
+<pre><code>List&lt;ColorPoint&gt; lst = [p1, p2, p3]</code></pre>
+<p>Then we would like to feed that into the <code>closeEnough</code> function:</p>
+<pre><code>lst2 = closeEnough lst</code></pre>
+<p>The first problem we encounter is whether we should be allowed to do this at all. After all <code>closeEnough</code> expected a <code>List&lt;Point&gt;</code> not a <code>List&lt;ColorPoint&gt;</code>. If we want our lists to be mutable, we have the depth subtyping problem we discussed earlier, and we cannot say that <code>List&lt;ColorPoint&gt; &lt;: List&lt;Point&gt;</code>.</p>
+<p>The other problem we have is that of the return value. The definition of <code>closeEnough</code> tells us merely that this is a <code>List&lt;Point&gt;</code>. But in reality it is a <code>List&lt;ColorPoint&gt;</code> as we merely filtered the original list. We have however lost that fact.</p>
+<p>So you might say, why can’t we just make <code>closeEnough</code> fully polymorphic:</p>
+<pre><code>closeEnough: List&lt;T&gt; -&gt; List&lt;T&gt;</code></pre>
+<p>Then we could ensure that whatever we get back has the same type as what went in. The problem is that the computation that <code>closeEnough</code> needs to perform requires something of the provided element, namely that it be a Point so we can measure its distance. This is not possible for a generic type.</p>
+<p>What we need is in some sense the best of both worlds: We need a polymorphic type, but we need it to be restricted to only those types that are subtypes of <code>Point</code>. This is <strong>bounded polymorphism</strong>, where we do have a variable type but in a somewhat restricted way, bounded to be a subtype of a specific type.</p>
+<p>With that in mind, the type of <code>closeEnough</code> may look like this:</p>
+<pre><code>&lt;T extends Point&gt; closeEnough: List&lt;T&gt; -&gt; List&lt;T&gt;</code></pre>
+<p>We can only apply <code>closeEnough</code> to a type that is a subtype of Point. Then <code>closeEnough</code> typechecks because it can count on its elements being subtypes of <code>Point</code> and therefore having the necessary distance properties. And also when we call it with <code>ColorPoint</code> it will then take the place of <code>T</code> and we can guarantee that the return type is <code>List&lt;T&gt;</code>, i.e. <code>List&lt;ColorPoint&gt;</code>.</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

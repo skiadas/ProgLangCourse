@@ -68,10 +68,9 @@ Your final grade depends on class attendance, homework, project, quizzes, midter
      Component   Percent
 --------------  --------
     Attendance        5%
-   Assignments       30%
-       Project       30%
-       Midterm       15%
-         Final       20%
+   Assignments       40%
+       Project       35%
+       Midterm       20%
 
 This gives a number up to 100, which is then converted to a letter grade based roughly on the following correspondence:
 

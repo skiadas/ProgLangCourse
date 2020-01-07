@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>racket_macros</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="macros">Macros</h1>
+<p>In this section we’ll discuss the powerful macro system that Racket offers. We will start by looking at preprocessor macros in C.</p>
+<h2 id="macros-in-c">Macros in C</h2>
+<p>You are probably already familiar with <a href="https://gcc.gnu.org/onlinedocs/cpp/Macros.html">preprocessor macros in C</a>. They are defined using the preprocessor directive <code>#define</code> and essentially the preprocessor goes through the rest of the file and replaces any occurence of the defined symbol with the expansion. Here’s a simple example:</p>
+<pre class="c"><code>#define BUFFER_SIZE 1024
+
+foo = (char *) malloc (BUFFER_SIZE);</code></pre>
+<p>This is exactly the same as if you had literally written:</p>
+<pre class="c"><code>foo = (char *) malloc (1024);</code></pre>
+<p>The first thing that is troublesome about the preprocessor is that it allows you to even overwrite keywords:</p>
+<pre class="c"><code>#include &lt;stdio.h&gt;
+#define true 0
+
+int main () {
+   if (true) { printf(&quot;true!\n&quot;); }
+   else { printf(&quot;false!\n&quot;); }
+   return 0;
+}</code></pre>
+<p>The expansion is purely syntactic, and it includes everything that follows the line. So for example the following is valid and prints 7:</p>
+<pre class="c"><code>#define A 2 +
+int main() { printf(&quot;%d\n&quot;, A A 3); return 0; }</code></pre>
+<p>As you can imagine, there are many ways to abuse the system.</p>
+<p>You can also create macros that behave a bit more like functions:</p>
+<pre class="c"><code>#define min(X, Y)  ((X) &lt; (Y) ? (X) : (Y))
+z = min(a + 28, *p);    /* becomes: z = ((a + 28) &lt; (*p) ? (a + 28) : (*p))    */</code></pre>
+<p>The parentheses might sound overkill, but not having them there could cause trouble and result in unpredictable behavior. For instance:</p>
+<pre class="c"><code>#define mult(a, b) a * b
+z1 = mult(3 + 2, 5)     /* becomes: 3 + 2 * 5 = 13, not (3 + 2) * 5 = 25 */</code></pre>
+<p>Here’s some other crazy ones, that you can try at home, borrowed from <a href="https://gist.github.com/aras-p/6224951">this gist</a>:</p>
+<pre class="c"><code>#define for for(int z=0;z&lt;2;++z)for
+#define struct union
+#define if while
+#define else
+#define break
+#define if(x)
+#define double float
+#define delete
+#define volatile // this one is cool
+#define true ((__LINE__&amp;15)!=15)
+#define true ((rand()&amp;15)!=15)
+#define if(x) if ((x) &amp;&amp; (rand() &lt; RAND_MAX * 0.99))
+#define sizeof(x) (sizeof(x)-1)
+#define strcpy(a,b) memmove(a,b,strlen(b)+2)
+#define continue break</code></pre>
+<h2 id="racket-macros">Racket Macros</h2>
+<p>Racket offers a very powerful and safer macro system, that includes what are called <strong>hygienic macros</strong>; we will discuss the concept shortly. Let us start with some examples.</p>
+<p>First, here is an example that allows us to write the words <code>then</code> and <code>else</code> as part of an <code>if</code>. This macro will convert <code>(my-if e1 then e2 else e3)</code> to the Racket-correct <code>(if e1 e2 e3)</code>.</p>
+<pre class="racket"><code>(define-syntax my-if
+  (syntax-rules (then else)
+    [(my-if e1 then e2 else e3)
+     (if e1 e2 e3)]))</code></pre>
+<p>We define a macro with <code>define-syntax</code>. The first term after it is the name of the macro. We then have a <code>syntax-rules</code> call that specifies a series of “keywords” that appear in the macro that should not be treated as variables, in this case those are <code>then</code> and <code>else</code>. The remaining arguments to <code>syntax-rules</code> is a series of bracketed pairs of expressions, where the first part of the pair is the form of <code>my-if</code> and the second is what it should be replaced by. We can create a single macro that can accept multiple forms of argument and behaves differently for each one.</p>
+<p>A key thing in the above is that the expressions <code>e1</code>, <code>e2</code> and <code>e3</code> are not being evaluated when <code>my-if</code> is encountered; the conversion to <code>if</code> happens without the evaluation of the expressions, which is good because we wouldn’t want <code>e2</code> and <code>e3</code> to always be evaluated. In this way macros are very different from functions. For example here is a macro for “or”:</p>
+<pre class="racket"><code>(define-syntax or
+  (syntax-rules ()
+    [(or e1 e2)
+     (if e1 e1 e2)]))  ;; Assumes &quot;or&quot; simply returns the first value that is not #f</code></pre>
+<p>A particularly nice use of macros is to build a “better” <code>delay</code> function, one that doesn’t require us to provide a thunk. We can simply provide the function we want to delay. Again, we use the fact that, unlike functions, macros don’t evaluate they arguments.</p>
+<pre class="racket"><code>(define-syntax delay2
+  (syntax-rules ()
+    [(delay e)
+     (mcons #f (lambda () e))]))</code></pre>
+<p>One thing to watch out for is exactly the fact that macros don’t actually evaluate their expressions. For instance consider the following macro for squaring a number:</p>
+<pre class="racket"><code>(define-syntax sq
+  (syntax-rules ()
+    [(sq e)
+     (* e e)]))
+
+(sq (begin (print &quot;You&#39;ll see this twice!&quot;) 4))</code></pre>
+<p>The macro expansion simply replaces both occurences of <code>e</code> the argument passed to <code>sq</code>, without evaluating it first. Then when the multiplication occurs both terms will be evaluated, resulting in a double evaluation of the <code>begin</code> block. One way around it is to use a let expression as part of the substitution:</p>
+<pre class="racket"><code>(define-syntax sq2
+  (syntax-rules ()
+    [(sq e)
+     (let ([v e])
+       (* v v))]))
+
+(sq2 (begin (print &quot;You&#39;ll see this only once now!&quot;) 4))</code></pre>
+<h2 id="hygienic-macros">Hygienic Macros</h2>
+<p>Creating new variable bindings within a macro can create some interesting naming problems. For example consider the following:</p>
+<pre class="racket"><code>(define-syntax foo
+  (syntax-rules ()
+    [(foo e)
+     (let ([v (+ e 1)])
+       (+ v e))]))
+
+(let ([v 5])
+  (foo v))</code></pre>
+<p>Then according to naive macro-expansion rules the last two lines would become:</p>
+<pre class="racket"><code>(let ([v 5])
+  (let ([v (+ v 1)])
+    (+ v v)))</code></pre>
+<p>The result of this would be <code>12</code>, as the <code>v</code> in the inner <code>let</code> would get the value <code>6</code> and the addition would use that <code>v</code> both times. That is clearly not what we intended. We would want the second <code>v</code> in <code>(+ v v)</code> to be the one inherited from the outer <code>let</code>. A naive macro-expander would end up making a hard to spot mistake.</p>
+<p>The problem of course is this: identifiers bound inside the macro may happen to also be contained in the expressions that are passed as arguments, and the fact that these expressions are substituted as is rather than evaluated would cause name conflicts.</p>
+<p>A <em>hygienic macro system</em>, like the one Racket has, automatically changes internally the names of bound identifiers to avoid these conflicts. So in the example above, it would create instead:</p>
+<pre class="racket"><code>(let ([v 5])
+  (let ([v2 (+ v 1)])
+    (+ v2 v)))</code></pre>
+<p>Assuming <code>v2</code> has not been bound previously. This would produce the correct result of <code>11</code>.</p>
+<p>Finally, here’s a way to implement <code>if</code> using <code>cond</code>:</p>
+<pre class="racket"><code>(define-syntax if
+  (syntax-rules ()
+    [(if e1 e2 e3)
+     (cond [e1 e2]
+           [#t e3])]))</code></pre>
+<p>And we will also do the converse, converting a <code>cond</code> into a sequence of <code>if</code>s. This is trickier, and requires providing multiple alternative rules, and using the <code>...</code> argument which allows us to represent “the rest of the entries”:</p>
+<pre class="racket"><code>(define-syntax cond
+  (syntax-rules (else)
+    [(cond)
+     (error &quot;cond: no matching case&quot;)]
+    [(cond [else e])
+     e]
+    [(cond [e1 e2] rest ...)
+     (if e1 e2 (cond rest ...))]))</code></pre>
+<h2 id="links-to-learn-more">Links to learn more</h2>
+<p>Some more links to learn about macros:</p>
+<ul>
+<li><a href="http://www.greghendershott.com/fear-of-macros/">Fear of Macros</a></li>
+<li><a href="https://docs.racket-lang.org/guide/macros.html">Racket’s Macros docs</a></li>
+</ul>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

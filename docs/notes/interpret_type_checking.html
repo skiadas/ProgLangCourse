@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>interpret_type_checking</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="type-checking-in-the-interpreter">Type-checking in the interpreter</h1>
+<h2 id="introduction">Introduction</h2>
+<p>We will now discuss the implementation of static type-checking.</p>
+<p>Let us start by considering what the type-checker might have to do in an example like the following program:</p>
+<pre class="racket"><code>(let ([x (+ 3 2)])
+  (* x 2))</code></pre>
+<p>Let us think of what a type-checker may have to do.</p>
+<ul>
+<li>It starts off by looking at a <code>let</code> expression. It will need to start by type-checking the addition.</li>
+<li>When time comes to evaluate the multiplication on the second line, it must have some idea about the type of <code>x</code>. That type should be the result type of the addition operation.</li>
+<li>Of course we could have had an arbitrary expression there instead of an addition.</li>
+<li>What this means is that the typechecker needs to return some type as the result of typechecking an expression: It must both confirm that the expression is “safe” and return what the type of the overall expression must be.</li>
+<li>The other important component is that we need to know what the type of <code>x</code> has to be while typechecking the product on the second line. This is exactly analogous to knowing the value of <code>x</code> when evaluating the body of a let expression. We introduced environments to be able to do exactly that.</li>
+<li>We will therefore need to provide the typechecker with a “static environment”, one that relates symbols to types (as opposed to the dynamic environment that related symbols to values/locations).</li>
+<li>Unlike for evaluation, we have no need for a store: A store allows us to change the value at a location. But with a type system in place, if it is to have any meaning, the values stored at a specific location should all have the same type.</li>
+</ul>
+<p>So in other words we know what our type-checker needs to do:</p>
+<ul>
+<li>It takes as input a static environment that binds symbols to types, and an expression. We can use the same environment setup from the evaluator, we will just insert types in there instead of values.</li>
+<li>It then checks the expression for type inconsistencies, and throws an error if it finds any.</li>
+<li>If there are no inconsistencies, then the type-checker must determine the type of the overall expression, and it returns that.</li>
+</ul>
+<p>Here is the language we will look at. Our functions need to specify the type of their argument. If we want to allow them to recursively call themselves we would need to also specify the return value, or else infer it. We will discuss type inference in the future. For now we will expect functions to specify both argument and return types.</p>
+<pre class="racket"><code>(struct varC (s) #:transparent)
+(struct numC (n) #:transparent)
+(struct boolC (n) #:transparent)
+(struct arithC (op e1 e2) #:transparent)
+(struct ifC (tst thn els) #:transparent)
+(struct pairC (e1 e2) #:transparent)
+(struct carC (e) #:transparent)
+(struct cdrC (e) #:transparent)
+(struct unitC () #:transparent)
+(struct letC (s e1 e2) #:transparent)
+(struct funC (fname arg ty-arg body ty-body) #:transparent)
+(struct callC (e1 e2) #:transparent)</code></pre>
+<p>We also need to specify similar structures for types. We will need the following types:</p>
+<ul>
+<li>Types for numbers and booleans</li>
+<li>A type for pairs, depending on two types</li>
+<li>A unit type.</li>
+<li>An “arrow” type for functions, depending on two types</li>
+</ul>
+<pre class="racket"><code>(struct numT () #:transparent)
+(struct boolT () #:transparent)
+(struct unitT () #:transparent)
+(struct pairT (t1 t2) #:transparent)
+(struct funT (t1 t2) #:transparent)    ;; t1 -&gt; t2</code></pre>
+<p>Here’s how the typechecker would start:</p>
+<pre class="racket"><code>(define (tc env e)
+  (cond
+    [(varC? e) (lookup (varC-s) env)]
+    [(numC? e) numT]
+    [(boolC? e) boolT]
+    [(unitC? e) unitT]
+    ;; more cases here ... ))</code></pre>
+<p>We will now consider each of the remaining cases. We will start with the arithmetic operators: They should only apply to numbers, and the result should be a number:</p>
+<pre class="racket"><code>    [(arithC? e)
+     (if (and (numT? (tc env (arithC-e1 e)))
+              (numT? (tc env (arithC-e3 e))))
+         numT
+         (error &quot;Arithmetic on non-numbers&quot;))]</code></pre>
+<p>Next we’ll handle a conditional. The test component must evaluate to a boolean, and the other two must have the same type. That type is the return type:</p>
+<pre class="racket"><code>    [(ifC? e)
+     (if (boolT? (tc env (ifC-thn e)))
+         (let ([t1 (tc env (ifC-thn e))]
+               [t2 (tc env (ifC-els e))])
+           (if (equal? t1 t2)
+               t1
+               (error &quot;Conditional branches must have same type&quot;)))
+         (error &quot;Conditional test must have boolean type&quot;))]</code></pre>
+<p>Next we have pairs: They simply form a new type out of their components:</p>
+<pre class="racket"><code>    [(pairC? e)
+     (pairT (tc env (pairC-e1 e))
+            (tc env (pairC-e2 e)))]</code></pre>
+<p>The pair accessors <code>car</code> and <code>cdr</code> are more interesting. They evaluate their expression, and it must be of pair type. They then read off the type from the pair.</p>
+<pre class="racket"><code>    [(carC? e)
+     (let ([t (tc env (carC-e e))])
+       (if (pairT? t)
+           (pairT-t1 t)
+           (error &quot;Trying to call car on non-pair&quot;)))]
+    [(cdrC? e)
+     (let ([t (tc env (cdrC-e e))])
+       (if (pairT? t)
+           (pairT-t1 t)
+           (error &quot;Trying to call cdr on non-pair&quot;)))]</code></pre>
+<p>Let statements are more interesting. As we discussed at the beginning, we need to typecheck the second expression in an environment that has the symbol bound to the type of the first expression.</p>
+<pre class="racket"><code>    [(letC? e)
+     (tc (bind (letC-s e)
+               (tc env (letC-e1 e))
+               env)
+         (letC-e2 e))]</code></pre>
+<p>Function definitions turn out to be the hardest case. We will start with function calls: They typecheck their first argument, and it must be a function (arrow) type. The argument type there must agree with the type of the second expression. The whole expression then has the return type stored in the function type.</p>
+<pre class="racket"><code>    [(callC? e)
+     (let ([tf (tc env (callC-e1 e))]
+           [tv (tc env (callC-e2 e))])
+       (if (funT? tf)
+           (if (equal? (funT-t1 tf) tv)
+               t2
+               (error &quot;Argument type does not match function&#39;s expected type&quot;))
+           (error &quot;Calling non-function&quot;)))]</code></pre>
+<p>Finally, we have function definitions. This is an interesting distinction between evaluation and typechecking. For evaluation we had to do the hard work when calling a function, as we had to extend the dynamic environment at that point. The typechecker needs to do its hard work when “creating” the function closure, to ensure that the function definition has the types it claims. This depends only on the type of the argument and on the body expression, and we can check this without needing to call the function.</p>
+<pre class="racket"><code>    [(funC? e)
+     (let ([targ (funC-ty-arg e)]
+           [tret (funC-ty-body e)]
+           [tbody (tc (funC-body e)
+                       (bind (funC-s e) targ env))])
+       (if (equal? tret tbody)
+           (funT targ tret)
+           (error &quot;Suggested return type does not match actual body type&quot;)))]</code></pre>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

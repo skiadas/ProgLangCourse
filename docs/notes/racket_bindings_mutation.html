@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>racket_bindings_mutation</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="more-on-racket-bindings-and-mutation">More on Racket: Bindings and Mutation</h1>
+<p>We discuss in this section the various options that Racket provides for creating bindings. We also discuss the tools it offers for mutation.</p>
+<h2 id="bindings">Bindings</h2>
+<p>In addition to <code>define</code> discussed earlier, there are four other <code>let</code>-style bindings in use in Racket, all with slightly different semantics, all with their uses.</p>
+<p>The first of these is a <code>let</code> construct very similar to OCAML’s:</p>
+<pre class="racket"><code>(let ([x 3]
+      [y (+ 2 3)])
+  (+ x y))</code></pre>
+<p>In other words the first argument in the <code>let</code> expression is a parenthesized sequence of pairs, represented by the square brackets, each pair being a binding of a symbol to an expression. The second argument to the <code>let</code> is an expression that is evaluated in a context where all the bindings described by the first argument are in place. Notice also the use of square brackets; square brackets are actually equivalent to parentheses in Racket, but we tend to use them in some specific cases to identify the terms involved; in this case the various bindings.</p>
+<p>It is important here to keep in mind that the bindings are evaluated all at once, and so a later binding cannot depend on a previous one. The following for example would signal an error:</p>
+<pre class="racket"><code>(let ([x 3]
+      [y (+ 2 x)])
+  (+ x y))</code></pre>
+<p>The second construct, which “solves” that “problem”, is called <code>let*</code>. It looks exactly like <code>let</code>, except that the bindings occur in order, and each future binding can use the bindings that came before it. You can think of a <code>let*</code> as a sequence of nested <code>let</code>s.</p>
+<pre class="racket"><code>(let* ([x 3]
+       [y (+ 2 x)])
+  (+ x y))</code></pre>
+<p>A third construct is <code>letrec</code>. In <code>letrec</code> all the bindings are being evaluated in an environment where the bindings are already defined. This sounds very self-referential, and it is, but it makes sense if you want to create mutually recursive functions. For example, here is a rather inefficient way to determine if a positive number is even:</p>
+<pre class="racket"><code>(define (isEven n)
+  (letrec
+      ([even? (lambda (x) (if (= 0 x)
+                              #t
+                              (odd? (- x 1))))]
+       [odd? (lambda (x) (if (= 0 x)
+                             #f
+                             (even? (- x 1))))])
+    (even? n)))</code></pre>
+<p>Here the functions <code>even?</code> and <code>odd?</code> depend on each other for their work. Situations like this make <code>letrec</code> a valuable feature.</p>
+<p>It is really important to keep in mind that <code>letrec</code> allows expressions to refer to bindings that might only exist later in time. If those bindings are accessed too soon then problems arise. So the following would in fact give us an error, because the <code>[y z]</code> binding tries to set the value of <code>y</code> to equal <code>z</code> before <code>z</code> had a chance to be defined to equal <code>3</code>; that hasn’t happened yet.</p>
+<pre class="racket"><code>(letrec ([y z]
+         [z 3])
+  y)</code></pre>
+<h2 id="variable-mutation">Variable Mutation</h2>
+<p>Racket actually supports what we named <em>variable mutation</em>. There is an operator that allows you to change the value of bindings:</p>
+<pre class="racket"><code>(define b 3)
+(define (f) b)
+b
+(f)
+(set! b 5)
+b
+(f)</code></pre>
+<p>Notice the <code>set!</code> line, that changes the value of <code>b</code>. Notice also how that changes the behavior of the function <code>f</code>. It’s not that we simply changed what <code>b</code> means in the future. We actually changed what <code>b</code> means in the closure of the function <code>f</code> that was defined prior to the <code>set!</code> line.</p>
+<p>As another example, here’s a simple function that keeps increasing an internal counter:</p>
+<pre class="racket"><code>(define next
+  (let ([counter 0])
+    (lambda () (begin (set! counter (+ counter 1))
+                      counter))))
+(next)        ;;    &lt;--- 1
+(next)        ;;    &lt;--- 2</code></pre>
+<p>We have used here the <code>begin</code> construct that allows us to sequence more than one expressions to evaluate in order, and we used <code>let</code> in order to not expose the variable <code>counter</code> to the rest of the program.</p>
+<p>Before we move on, consider the following and explain what goes on:</p>
+<pre class="racket"><code>(define (f x)
+  (begin (set! x 5) x))
+(define b 2)
+(f b)      ;  &lt;-- how much is this?
+b          ;  &lt;-- how much is this?</code></pre>
+<h2 id="structure-mutation">Structure Mutation</h2>
+<p>Racket also offers various forms of Structure Mutation, one is <strong>mutable cons cells</strong>. These cons cells must be constructed with a call to <code>mcons</code> instead of <code>cons</code>, their parts can be accessed with calls to <code>mcar</code> and <code>mcdr</code>, and their contents can be changed with a call to <code>set-mcar!</code> or <code>set-mcdr!</code>. As an example, we’ll implement delayed evaluation as follows:</p>
+<ul>
+<li>We keep an unevaluated thunk in a mutable cons cell <code>(mcons #f th)</code>.</li>
+<li>When we are forced to evaluate the thunk the first time, we change the cell to <code>(mcons #t v)</code> where <code>v</code> is the value we get from evaluating the thunk.</li>
+</ul>
+<p>Here is for example code for a <code>delay</code> function and a <code>force</code> function:</p>
+<pre><code>(define (delay th)
+  (mcons #f th))
+
+(define (force cell)
+  (if (mcar cell)
+      (mcdr cell)
+      (let ([v ((mcdr cell))])
+        (begin (set-mcar! cell #t)
+               (set-mcdr! cell v)
+               v))))
+
+(define delayed-b
+  (delay (lambda ()
+           (begin (print &quot;Will only see this once!&quot;)
+                  5))))
+
+(force delayed-b)
+(force delayed-b)</code></pre>
+<h2 id="practice">Practice</h2>
+<p>All these can be done with either <code>mcons</code> cells or <code>set!</code>, but were originally designed to be done with <code>set!</code>.</p>
+<ol type="1">
+<li>Write a function <code>keepAdding</code> that starts with an internal counter of <code>0</code>. Each time it is called it takes as argument a number, updates the counter by adding this number and returns the result.</li>
+<li>Write a function that takes some initial input, and returns a function <code>recall</code> that does the following: Each time it is called, with an argument, it returns the value that was used the last time it was called. For the first call we would return the initial input that was provided to the function that created <code>recall</code>.</li>
+<li>Write a function <code>stackup</code> that each time it is called with an argument it adds this argument to the list of values from previous calls, starting with an empty list. Each call to the function increases the list length by 1.</li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>recursion_state</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="state-recursion">State Recursion</h1>
+<p>Additional reading on recursion: <a href="https://gist.github.com/skiadas/15f2e6f82b1cb3a41f39">https://gist.github.com/skiadas/15f2e6f82b1cb3a41f39</a></p>
+<p>Last time we made a distinction between “normal recursion” and “state recursion”; as well as a distinction between “numerical recursion” and “structural recursion”. The two examples of normal recursion we saw last time were as follows:</p>
+<pre><code>let rec sum n =
+  if n = 1
+  then 1
+  else sum (n - 1) + n</code></pre>
+<p>and</p>
+<pre><code>let rec list_sum lst =
+  match lst with
+  | [] -&gt; 0
+  | hd :: tl -&gt; hd + list_sum tl</code></pre>
+<p>The key characterstic in both cases is that we build the answer out of a recursive call on a “smaller” problem together with the contribution from the current value.</p>
+<p>There is a different approach, familiar from languages that focus on iteration and for-loops: We use an accumulator, and as we go through each value we add its contribution to the accumulator. We can do something similar for via recursion as well. It typically involves the use of a <em>helper (auxiliary) function</em>. Here is the first example in this setting:</p>
+<pre><code>let rec sum n =
+  let rec aux (sofar, k) =
+    if k &gt; n
+    then sofar
+    else aux (sofar + k, k + 1)
+  in aux (0, 1)</code></pre>
+<p>Here is how evaluation of say <code>sum 3</code> would go:</p>
+<pre><code>sum 3
+aux (0, 1)
+aux (0 + 1, 1 + 1)
+aux (1, 2)
+aux (1 + 2, 2 + 1)
+aux (3, 3)
+aux (3 + 3, 3 + 1)
+aux (6, 4)
+6</code></pre>
+<p>The key is the helper method: It takes as input the current “counter”, <code>k</code>, as well as the sum of the values so far, stored in the variable <code>sofar</code>. In the recursive call we update those values, and call the function with the updated values. When we have reached the last value, we can read off the sum from the <code>sofar</code> variable.</p>
+<p>A similar approach would work for the <code>list_sum</code> example:</p>
+<pre><code>let list_sum lst =
+  let rec aux (sofar, remaining) =
+    match remaining with
+    | [] -&gt; sofar
+    | x :: rest -&gt; aux (sofar + x, rest)
+  in aux (0, lst)</code></pre>
+<p>Here the auxiliary function keeps track of the sum of the already computed values, and the remainder of the list. As long as the list is nonempty, it grabs the next element, adds its contribution to the current sum, then calls itself with the updated sum and list. Computation would go as follows:</p>
+<pre><code>list_sum [1; 2; 3]
+aux (0, [1; 2; 3])
+aux (0 + 1, [2; 3])
+aux (1, [2; 3])
+aux (1 + 2, [3])
+aux (3, [3])
+aux (3 + 3, [])
+aux (6, [])
+6</code></pre>
+<p>In general you should avoid this state recursion. But some problems do call for it. This method is essentially iteration with an accumulator, in disguise: The arguments passed to the auxilliary function contain the accumulator and the “iterated variable”. The resulting value is synthesized one step at a time, rather than at the end after all recursive calls have been completed. Programmers coming from procedural languages find it comforting, because of this relation to normal looping constructs. You should resist the temptation to do all recursion this way, in fact avoid using it unless you have a really good reason to do so.</p>
+<h2 id="practice-problems">Practice problems</h2>
+<p>Some of these problems favor a state recursion approach, others favor a normal recursion.</p>
+<ol type="1">
+<li>Write a function <code>rev</code> that given a list of integers returns a list of the same integers in reverse order.</li>
+<li>Write a function <code>isSquare</code> that is given as input an integer <code>n</code> and tries to see if it is a square by trying the numbers 1 through n and seeing if any of them have <code>n</code> as their square. Return a boolean <code>true</code> if <code>n</code> is a perfect square, <code>false</code> otherwise. Your code should stop the moment it confirms the number is a perfect square (for example for <code>n = 9</code>, it should stop when it reaches <code>3</code>.</li>
+<li>Write a function <code>maxMaybe</code> that takes as input a list of integers and returns an option integer: <code>None</code> if the list was empty, <code>Some v</code> otherwise, where <code>v</code> is the largest integer in the list. Do not rely on any of OCAML’s built-in functions.</li>
+<li>Write a function <code>someMax</code> that takes as input a list of int-options and returns an int option as follows: It returns either <code>Some m</code> where m is the maximum of all the integers present in the list (in the form of <code>Some i</code> entries in the list) or <code>None</code> if there are no such integers (so if the list is empty or contains only <code>None</code>s).</li>
+<li>Write a function <code>sortedInsert</code> that takes as input a pair of a number <code>n</code> and a list containing integers and assuming they are in increasing order (e.g. <code>[1; 3; 3; 3; 4]</code>), and it returns a new list where the number <code>n</code> has been inserted in the appropriate spot in order to preserve the increasing order. In the case where the integer already exists in the list, you must add a new entry, and you have a choice on where to add it. For instance in the example above a new <code>3</code> would technically be insertable in four different spots, and they are all equivalent.</li>
+<li>Write a function <code>seq</code> that takes as input a pair of integers <code>(a, b)</code> and returns a list of all the integers from <code>a</code> to <code>b</code> (empty list if <code>a &gt; b</code>). For instance <code>seq (2, 5) = [2; 3; 4; 5]</code>.</li>
+<li>Write a function <code>noMultiples</code> that is given as input a pair of an integer <code>n</code> and a list of integers <code>lst</code>, and it returns a list of those elements from <code>lst</code> that are not perfectly divisible by <code>n</code> (and in the same order). You can look at the remainder of division of <code>a</code> by <code>b</code> via <code>a mod b</code>.</li>
+<li>Write a function <code>primes</code> that is given as input an integer <code>n</code> and returns a list of all the prime numbers up to <code>n</code>. You should use <code>seq</code> to first create a list of all numbers from <code>2</code> to <code>n</code>, then use <code>noMultiples</code> along with recursion. You will probably need to also create a helper function within <code>primes</code> to handle this recursion (it does NOT have to be state recursion, but it does need a helper function). At each step of the process you should be able to take out the next prime number, remove its multiples, and continue recursively.</li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

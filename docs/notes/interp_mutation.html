@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>interp_mutation</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="mutation-in-the-interpreter">Mutation in the Interpreter</h1>
+<p>We will discuss in this section the challenges involved in introducing mutation into an interpreter. This will lead us to the need for a second storage unit in addition to the environment, with a distinctly different behavior. We refer to this second unit as the store.</p>
+<h2 id="the-problem-with-our-current-interpreter">The problem with our current Interpreter</h2>
+<p>Let us consider the problem with using our current interpreter in a language that we want to introduce mutation. Our interpreter so far operates as follows:</p>
+<ul>
+<li>There is an environment in which bindings are looked up.</li>
+<li>The interpreter evaluates an expression in a given environment.</li>
+<li>The interpreter returns a value as the result of the evaluation.</li>
+<li>The environment extends in <code>let</code> expressions and function calls.</li>
+<li>The environment gets stored in a function closure, to be retrieved at the function call later.</li>
+<li>Expressions with multiple subparts typically recursively call themselves on the subparts, with the same environment.</li>
+</ul>
+<p>We will see that the last two properties, which are essential parts of the interpreter’s behavior, will force us to make changes for an interpreter that needs to accomodate mutation.</p>
+<p>Let us start by considering the standard addition, which looked something like this in the interpreter, ignoring type-checking safeguards:</p>
+<pre class="racket"><code>[(plus? e) (+ (interp env (plus-e1 e))
+              (interp env (plus-e2 e)))]</code></pre>
+<p>Here <code>env</code> is the environment in which <code>e</code> was to be evaluated. The key emphasis here is that it is this same environment that is used to evaluate both terms of the expression.</p>
+<p>But in the presence of mutation, we need to accept the possibility that something that we do in the first summand might affect the second summand. For instance in the following Racket code:</p>
+<pre class="racket"><code>(let ([a 3])
+  (+ (begin (set! a 2) 4)
+     a))</code></pre>
+<p>The answer should be <code>6</code>, not <code>7</code>. But in the above interpretation there is no room for that. The interpretation of the first summand is simply returning a value, and has no way to communicate the change that has occured to <code>a</code>. This is a major problem.</p>
+<blockquote>
+<p>In order to accomodate mutation, the interpreter needs to be able to return more than a value, in order to communicate possible changes to the next step in time. The standard behavior of the environment in an interpreter does not incorporate the time factor.</p>
+</blockquote>
+<p>So what should the interpreter return, in addition to a value? One possible answer would be that it needs to return a new environment, but this would be wrong. A good reason for that is the way closures work. For instance consider this example:</p>
+<pre class="racket"><code>(define b 2)
+(define f (lambda () b))
+(f)
+(set! b 5)
+(f)</code></pre>
+<p>There is an environment that gets stored along with the definition of <code>f</code>, to form the closure. In any subsequent calls to <code>f</code>, that environment is accessed and <code>f</code> is evaluated in that environment. We have no way to change that environment, and so we have no way to make the two calls to <code>f</code> produce different results, as they should.</p>
+<blockquote>
+<p>Closures store an environment in which the function is to be evaluated. The presence of mutation means that we need to somehow be able to change the values of the variables bound in that environment, without actually changing the environment.</p>
+</blockquote>
+<p>This leads us to a key observation: The environment cannot actually hold values. It must hold “locations”. And those locations must then link to values. It is that linking that may change over time as assignments and mutation take place.</p>
+<p>A good analog is the difference between the stack and the heap. The environment is like the stack, typically holding pointers to memory locations on which the data is actually stored. Variables are bound to these locations, and changes in those bindings relate to adding and removing calls from the stack, which is loosely the analog to let-expressions extending the environment. But we also need something like the <strong>heap</strong>, which relates memory locations to data stored at those locations, and that data may change without the locations changing.</p>
+<p>We therefore split the storage of the information needed by the interpreter in two parts:</p>
+<ul>
+<li>The <strong>environment</strong> binds variables to <strong>locations</strong>. It is part of the input to the interpreter, and it behaves in a recursive decent way, extending on let statements and function calls, and being stored in closures.</li>
+<li>The <strong>store</strong> relates locations to values. It is returned from each interpreter call, along with the value produced, and is provided as input to the following call to propagate value changes due to mutation. This is called <strong>storage-passing style</strong>.</li>
+<li>There needs to be a mechanism for creating new “locations”, which more or less amounts to a <code>malloc</code> call for memory allocation. We will “emulate” that process by having locations represented by integers, and a new location being produced by simply increasing an index.</li>
+</ul>
+<h2 id="a-minimal-interpreter-with-structure-mutation">A minimal interpreter with structure mutation</h2>
+<pre class="racket"><code>; Locations are integers.
+; (new-loc) returns a new &quot;location&quot;.
+; (bind s loc env) adds a binding of a symbol to a location and
+; extends the environment.
+; (lookup s env) looks a symbol up in an environment, returns a
+; location.
+; (store loc v sto) extends the store by associating the value
+; to the location.
+; (fetch loc sto) looks up a location in the store and returns
+; the value stored there.
+;
+; Language expressions:
+(struct var (s) #:transparent)
+(struct num (n) #:transparent)
+(struct arith (op e1 e2) #:transparent)
+(struct fun (fname arg body) #:transparent)
+(struct call (e1 e2) #:transparent)
+(struct letC (s e1 e2) #:transparent)
+(struct ref (e) #:transparent)
+(struct assign (e1 e2) #:transparent)
+(struct deref (e) #:transparent)
+(struct seq (e1 e2) #:transparent)
+;
+; Values:
+(struct numV (n) #:transparent)
+(struct closV (f env) #:transparent)
+(struct refV (loc) #:transparent)
+; Results are a value plus a store:
+(struct res (v sto) #:transparent)
+; interp: env sto e  -&gt; result
+(define (interp env sto e)
+  (cond
+    [(num? e) (res (numV (num-n e))
+                   sto)]
+  ... ; will look at them one at a time
+  ))</code></pre>
+<p>The interpreter now takes as input an environment and a store and an expression, and returns a pair of a value and an updated store. Some cases don’t really change the store, they just propagate the provided store. Others need to change it.</p>
+<p>We start with the <code>var</code> case. It must use <code>lookup</code> to get the location where the value is stored, then use <code>fetch</code> to grab the value stored in that location.</p>
+<pre class="racket"><code>    [(var? e)
+     (res (fetch (lookup (var-s e) env) sto)
+          sto)]</code></pre>
+<p>Arithmetic operations must be careful about the order of evaluation: The first expression must be evaluated, returning a value and an updated store. Then <em>this updated store</em> must be used when evaluating the second expression. Finally, we must return the store returned by that second expression.</p>
+<pre class="racket"><code>    [(arith? e)
+     (let* ([r1 (interp env sto (arith-e1 e))]
+            [r2 (interp env (res-sto r1) (arith-e2 e))])
+       (if (and (numV? (res-v r1))
+                (numV? (res-v r2)))
+           (res (numV ((arith-op e) (numV-n (res-v r1))
+                                    (numV-n (res-v r2))))
+                (res-sto r2))
+           (error &quot;interp: adding non-numbers&quot;)))]</code></pre>
+<p>Notice how much more complicated each case becomes out of the need to properly maintain the time-effect of store-passing style.</p>
+<p>We’ll now look at the cases that are related to mutation. <code>seq</code> is similar to arith: <code>e1</code> is interpreter only so we can get an updated store.</p>
+<pre class="racket"><code>    [(seq? e)
+     (let ([r1 (interp env sto (seq-e1 e))])
+       (interp env (res-sto r1) (seq-e2 e)))]</code></pre>
+<p><code>ref</code> needs to create a new location, then store the value from the expression.</p>
+<pre class="racket"><code>    [(ref? e)
+     (let ([loc (new-loc)]
+           [r (interp env sto (ref-e e))])
+       (res (ref loc)
+            (store loc (res-v r) (res-sto r))))]</code></pre>
+<p><code>unref</code> is straightforward. It must ensure that its expression evaluates to a <code>refV</code>:</p>
+<pre class="racket"><code>    [(unref? e)
+     (let ([r (interp env sto (unref-e e))])
+       (if (refV? (res-v r))
+           (res (fetch (refV-loc (res-v r))
+                       (res-sto r))
+                (res-sto r)))
+       (error &quot;unreferencing from non-reference&quot;))]</code></pre>
+<p>Finally, we have to implement <code>assign</code>. Since we don’t have “unit”s in our language we will simply return the value. But it is important to update the store:</p>
+<pre class="racket"><code>    [(assign? e)
+     (let* ([r1 (interp env sto (assign-e1 e))]
+            [r2 (interp env (res-sto r1) (assign-e2 e))])
+       (if (refV? (res-v r1))
+           (res (res-v r2)
+                (store (refV-loc (res-v r1))
+                                 (res-v r2)
+                                 (res-sto r2)))
+           (error &quot;assigning to non-reference&quot;)))]</code></pre>
+<p>Next, we have to implement function definitions and function calls, as well as <code>let</code> statement. We start with the <code>let</code>. <code>letC</code> needs to bind the symbol to a location that holds a value. So it needs to create a new location and update both the environment and the store before evaluating the second expression. So this is how that will look (pay attention to the updated store):</p>
+<pre class="racket"><code>    [(letC? e)
+     (let* ([loc (new-loc)]
+            [r1 (interp env sto (letC-e1 e))])
+       (interp (bind (letC-s e) loc env)
+               (store loc (res-v r1) (res-sto r1))
+               (letC-e2 e)))]</code></pre>
+<p>Function definition is straightforward:</p>
+<pre class="racket"><code>    [(fun? e)
+     (res (closV e env)
+          sto)]</code></pre>
+<p>Function calls are trickier but similar to <code>letC</code>. We need to: Evaluate the function location to a value, evaluate the parameter location to a value, check that the function value is indeed a closure, create a new location to hold the binding of the parameter, get the environment out of the closure and extend it by this new location, extend the appropriate scope with this new location related to the parameter’s value, then evaluate the body in the appropriate environment and scope. Phew. Ok here’s how that looks (ignoring for the sake of simplicity the question of the recursive name for the function):</p>
+<pre class="racket"><code>    [(call? e)
+     (let* ([loc (new-loc)]
+            [rf (interp env sto (call-e1 e))]
+            [rv (interp env (res-sto rf) (call-e2 e))]
+            [cl (res-v rf)])
+       (if (closV? cl)
+           (interp (bind (fun-arg (closV-f cl))
+                         loc
+                         (closV-env cl))
+                   (store loc
+                          (res-v rv)
+                          (res-sto rv))
+                   (fun-body (closV-f cl)))
+           (error &quot;Trying to call non-function&quot;)))]</code></pre>
+<p>A very interesting question arises if the value to be passed is already a <code>refV</code>, with its own location. Should we reuse that location, instead of creating our own new location? What does this mean about the semantics of the function call?</p>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

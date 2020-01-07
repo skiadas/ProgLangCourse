@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>style</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="style-guide">Style Guide</h1>
+<p>A large part of any programmer’s job is not to write code, but to read it. It may be code they wrote yesterday, or two years ago, or it might be someone else’s code. It is therefore of paramount importance that you make sure your code is <em>easily readable</em> and that its <em>meaning</em> is easily discerned. Style is a part of this, language design choices is another.</p>
+<blockquote>
+<p>Write you code for the humans that will read it in the future.</p>
+</blockquote>
+<h2 id="general-principles">General principles</h2>
+<p>Some general principles that follow this rule would be:</p>
+<ul>
+<li>Each line of code should try to do “one thing”. In particular avoid overly long lines.</li>
+<li>Choose function and variable names with readability in mind. They should reflect as much as possible what the function does or what the variable represents.</li>
+<li>Factor out common patterns into functions.</li>
+<li>Avoid having very long and complicated functions.</li>
+<li>Use variable bindings to give names to intermediate computations when it makes sense to do so.</li>
+<li>Avoid cleverness if it will result in obscure code.</li>
+<li>Write clear comments, and on the things that matter.</li>
+<li>Use a uniform style. The specific choices are less important than is making some choices and being consistent.</li>
+</ul>
+<h2 id="specific-style-issues">Specific style issues</h2>
+<p>There are numerous conventions one can follow for style. Some are really just good practices, others are more matters of choice.</p>
+<h3 id="whitespace">Whitespace</h3>
+<ul>
+<li>Avoid using actual tab characters. You can set your text editor to insert spaces when you press Tab.</li>
+<li>Leave one space around binary operators, and no space after unary operators.</li>
+<li>Always leave a space after commas and semicolons.</li>
+<li>Avoid spaces after an opening bracket/parenthesis and before a closing bracket/parenthesis.</li>
+<li>Use spaces right before an opening bracket/parenthesis and after a closing bracket/parenthesis, if it will not conflict with the previous rule.</li>
+<li>Use empty lines inbetween top-level <code>let</code> definitions, but not within those definitions.</li>
+</ul>
+<h3 id="naming">Naming</h3>
+<ul>
+<li>Use meaningful variable and function names.</li>
+<li>When applicable, use a verb in the function name to indicate intent, e.g. <code>is_positive</code> or <code>has_kings</code>.</li>
+<li>You cannot start normal names with an uppercase letter. That is reserved for constructors (we will see constructors later in the course).</li>
+<li>Use underscores to separate multiple words in variables and functions, e.g. <code>list_of_things</code>.</li>
+<li>Use camel-case for multiple-word constructors, e.g. <code>IntVar</code>.</li>
+</ul>
+<h3 id="language-constructs">Language constructs</h3>
+<p>In most of these constructs we will provide multiple forms.</p>
+<p>Top-level let bindings:</p>
+<pre><code>let x = ...    (* for short assignments *)
+let x =
+  ...     (* Indent by 2 or 3 spaces typically *)</code></pre>
+<p>Local let bindings:</p>
+<pre><code>let x = ... in ...      (* short assignments *)
+
+let x = ... in
+...            (* line it up with the let it matches *)</code></pre>
+<p>My personal favorite:</p>
+<pre><code>let x = ...
+in ...</code></pre>
+<p>and for multiple bindings:</p>
+<pre><code>let x = ... in
+let y = ... in
+let z = ...
+in ....</code></pre>
+<p>Conditionals:</p>
+<pre><code>if ... then ... else ...     (* for extremely short conditionals *)
+if ...
+then ...         (* align vertically *)
+else ...</code></pre>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>

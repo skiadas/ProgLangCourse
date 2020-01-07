@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/themes/prism-dark.css" rel="stylesheet" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>midterm_study_guide</title>
+  <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet" href="https://skiadas.github.io/css/course.css" type="text/css" />
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+<body>
+<h1 id="midterm-study-guide">Midterm study guide</h1>
+<p>This midterm will have a more theoretical vibe. You will also be expected to write OCAML code on paper, as well as read OCAML code, but the majority of the exam will be devoted to explaining the theoretical concepts we have been discussing.</p>
+<ol type="1">
+<li>Be able to describe very precisely the syntax rules and evaluation semantics for all the language constructs we have considered up to this point.</li>
+<li>Define and describe the differences between the static environment and the dynamic environment. When is each used?</li>
+<li>Explain the concept of function closure, explain how it differs from functions, show examples of its importance.</li>
+<li>Be able to follow the process of type inference to determine the most general type for a function.</li>
+<li>Be able to solve recursion problems on paper, especially list-processing problems.</li>
+<li>Explain the mechanisms that allow OCAML to treat all functions as functions of exactly one variable, and yet be able to handle functions of “zero” or “two or more” variables.</li>
+<li>Define when we say that an expression is in tail position. When do we say that a function is tail-recursive?</li>
+<li>Define and explain the difference between variable mutation and structural mutation.</li>
+<li>Describe the mechanisms that make “curried functions” possible.</li>
+<li>What does “shadowing a binding” mean? Explain by an example. How does it differ from overwriting the binding?</li>
+<li>What are the two fundamental ways of creating new types from existing ones (tuples vs variants)? What are their differences? What are the closest analogs in C++ or Java?</li>
+<li>What is the use of the “option” type? Give examples.</li>
+<li>Explain the use of the “unit” type and value <code>()</code>.</li>
+<li>What are differences between OCAML’s references and C/C++’s pointers?</li>
+</ol>
+<script type="text/javascript">
+let els = document.getElementsByTagName("pre");
+for (const el of els) {
+  const lang = el.getAttribute("class");
+  if (lang != "") {
+      el.children[0].setAttribute("class", "language-"+lang);
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-java.js"></script>
+</body>
+</html>
